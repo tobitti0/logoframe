@@ -1,5 +1,5 @@
 //====================================================================
-// •¡”ƒƒSˆ——pƒwƒbƒ_ƒtƒ@ƒCƒ‹
+// è¤‡æ•°ãƒ­ã‚´å‡¦ç†ç”¨ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«
 //====================================================================
 
 #ifndef ___LOGOSET_MUL_H
@@ -10,27 +10,31 @@
 
 // max number of logo data
 #define LOGONUM_MAX 100
-// "-logo"ƒIƒvƒVƒ‡ƒ“‚Åæ“¾‚·‚éƒtƒ@ƒCƒ‹–¼Å‘å”
+// "-logo"ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã§å–å¾—ã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«åæœ€å¤§æ•°
 #define FILELISTNUM_MAX LOGONUM_MAX
-// "-oanum"ƒIƒvƒVƒ‡ƒ“‚Ì‰Šú’l
+// "-oanum"ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã®åˆæœŸå€¤
 #define DEF_MLOGO_OANUM  90
 
 
-// ƒƒSƒf[ƒ^‚ÌŠg’£q
+// ãƒ­ã‚´ãƒ‡ãƒ¼ã‚¿ã®æ‹¡å¼µå­
 #define EXTNAME_LOGODATA   ".lgd"
 #define EXTNAME_LOGOPARAM  ".logoframe.txt"
 
-// logoframe‰Šú“Ç‚İ‚İƒIƒvƒVƒ‡ƒ“ƒtƒ@ƒCƒ‹–¼
+// logoframeåˆæœŸèª­ã¿è¾¼ã¿ã‚ªãƒ—ã‚·ãƒ§ãƒ³ãƒ•ã‚¡ã‚¤ãƒ«å
 #define INIFILE_NAME       "logoframe.ini"
-// logoframe—pƒZƒNƒVƒ‡ƒ“–¼
+// logoframeç”¨ã‚»ã‚¯ã‚·ãƒ§ãƒ³å
 #define SECTION_LOGOFRAME  "[logoframe]"
 
-// ƒtƒHƒ‹ƒ_‹æØ‚è‹L†
+// ãƒ•ã‚©ãƒ«ãƒ€åŒºåˆ‡ã‚Šè¨˜å·
+#ifdef _WIN32
 #define DELIMITER_DIR     '\\'
 #define DELIMITER_STRDIR  "\\"
+#else
+#define DELIMITER_DIR     '/'
+#define DELIMITER_STRDIR  "/"
+#endif
 
-
-// è‡’lƒpƒ‰ƒ[ƒ^XV•Û‘¶—piXVƒtƒ‰ƒOj
+// é–¾å€¤ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿æ›´æ–°ä¿å­˜ç”¨ï¼ˆæ›´æ–°ãƒ•ãƒ©ã‚°ï¼‰
 typedef struct {
 	char	up_num_fadein;
 	char	up_num_fadeout;
@@ -51,44 +55,44 @@ typedef struct {
 	char	up_auto_bs11;
 } MLOGO_UPTHRESREC;
 
-// è‡’lƒpƒ‰ƒ[ƒ^XV•Û‘¶—p
+// é–¾å€¤ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿æ›´æ–°ä¿å­˜ç”¨
 typedef struct {
 	LOGO_THRESREC		dat;
 	MLOGO_UPTHRESREC	up;
 } MLOGO_THRESREC;
 
 
-// •¡”ƒƒSƒf[ƒ^Ši”[
+// è¤‡æ•°ãƒ­ã‚´ãƒ‡ãƒ¼ã‚¿æ ¼ç´
 typedef struct {
-	// ŒÄ‚Ño‚µŒ³‚Å‚àQÆ‚·‚é’l
-	short dispoff;									// ƒIƒvƒVƒ‡ƒ“ "-nodisp"
-	short paramoff;									// ƒIƒvƒVƒ‡ƒ“ "-nodispparam"
-	short num_deflogo;								// ’è‹`ƒƒS”
+	// å‘¼ã³å‡ºã—å…ƒã§ã‚‚å‚ç…§ã™ã‚‹å€¤
+	short dispoff;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-nodisp"
+	short paramoff;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-nodispparam"
+	short num_deflogo;								// å®šç¾©ãƒ­ã‚´æ•°
 
-	// logoframe•¡”ƒƒS‘Î‰‚Åg—p‚·‚éƒIƒvƒVƒ‡ƒ“
-	short oanum;									// ƒIƒvƒVƒ‡ƒ“ "-oanum"
-	short oasel;									// ƒIƒvƒVƒ‡ƒ“ "-oasel"
-	short oamask;									// ƒIƒvƒVƒ‡ƒ“ "-oamask"
-	short outform;									// ƒIƒvƒVƒ‡ƒ“ "-outform"
-	char* opt_logofilename;							// ƒIƒvƒVƒ‡ƒ“ "-logo"
-	char* opt_logoparamfile;						// ƒIƒvƒVƒ‡ƒ“ "-logoparam"
-	char* opt_outfile;								// ƒIƒvƒVƒ‡ƒ“ "-o"
-	char* opt_anafile;								// ƒIƒvƒVƒ‡ƒ“ "-oa"
-	char* opt_ana2file;								// ƒIƒvƒVƒ‡ƒ“ "-oa2"
-	char* all_logofilename[LOGONUM_MAX];			// ƒƒSƒtƒ@ƒCƒ‹–¼ƒŠƒXƒg
+	// logoframeè¤‡æ•°ãƒ­ã‚´å¯¾å¿œã§ä½¿ç”¨ã™ã‚‹ã‚ªãƒ—ã‚·ãƒ§ãƒ³
+	short oanum;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-oanum"
+	short oasel;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-oasel"
+	short oamask;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-oamask"
+	short outform;									// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-outform"
+	char* opt_logofilename;							// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-logo"
+	char* opt_logoparamfile;						// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-logoparam"
+	char* opt_outfile;								// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-o"
+	char* opt_anafile;								// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-oa"
+	char* opt_ana2file;								// ã‚ªãƒ—ã‚·ãƒ§ãƒ³ "-oa2"
+	char* all_logofilename[LOGONUM_MAX];			// ãƒ­ã‚´ãƒ•ã‚¡ã‚¤ãƒ«åãƒªã‚¹ãƒˆ
 
-	FILE*             fpo_ana2[LOGONUM_MAX];		// ƒfƒoƒbƒO—pƒtƒ@ƒCƒ‹•Û—p
-	LOGO_DATASET*     all_logodata[LOGONUM_MAX];	// ŠeƒƒSƒf[ƒ^Ši”[
-	MLOGO_THRESREC    thres_arg;					// è‡’liˆø”w’èj
-	LOGO_RESULTOUTREC logoresult;					// ‘S‘ÌŒŸoŒ‹‰ÊŠi”[
+	FILE*             fpo_ana2[LOGONUM_MAX];		// ãƒ‡ãƒãƒƒã‚°ç”¨ãƒ•ã‚¡ã‚¤ãƒ«ä¿æŒç”¨
+	LOGO_DATASET*     all_logodata[LOGONUM_MAX];	// å„ãƒ­ã‚´ãƒ‡ãƒ¼ã‚¿æ ¼ç´
+	MLOGO_THRESREC    thres_arg;					// é–¾å€¤ï¼ˆå¼•æ•°æŒ‡å®šï¼‰
+	LOGO_RESULTOUTREC logoresult;					// å…¨ä½“æ¤œå‡ºçµæœæ ¼ç´
 
-	long  image_frames;								// ‰æ‘œƒf[ƒ^ƒtƒŒ[ƒ€”
-	long  total_frame[LOGONUM_MAX];					// ƒƒS•\¦ŠúŠÔƒtƒŒ[ƒ€‡Œv
-	short total_valid[LOGONUM_MAX];					// —LŒøƒƒS”»•Ê
-	short priority_list[LOGONUM_MAX];				// ƒƒS—Dæ‡ˆÊƒŠƒXƒg
-	short num_detect;								// CMŒŸo—LŒøƒƒS”
-	short num_others;								// CMŒŸoŠOƒƒS”
-	short num_disable;								// –³Œø”»’fƒƒS”
+	long  image_frames;								// ç”»åƒãƒ‡ãƒ¼ã‚¿ãƒ•ãƒ¬ãƒ¼ãƒ æ•°
+	long  total_frame[LOGONUM_MAX];					// ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ãƒ•ãƒ¬ãƒ¼ãƒ åˆè¨ˆ
+	short total_valid[LOGONUM_MAX];					// æœ‰åŠ¹ãƒ­ã‚´åˆ¤åˆ¥
+	short priority_list[LOGONUM_MAX];				// ãƒ­ã‚´å„ªå…ˆé †ä½ãƒªã‚¹ãƒˆ
+	short num_detect;								// CMæ¤œå‡ºæœ‰åŠ¹ãƒ­ã‚´æ•°
+	short num_others;								// CMæ¤œå‡ºå¤–ãƒ­ã‚´æ•°
+	short num_disable;								// ç„¡åŠ¹åˆ¤æ–­ãƒ­ã‚´æ•°
 } MLOGO_DATASET;
 
 #endif

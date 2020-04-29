@@ -23,11 +23,22 @@
  * For more information, contact us at licensing@x264.com.
  *****************************************************************************/
 
-#include <windows.h>
-
 #define AVSC_NO_DECLSPEC
 #undef EXTERN_C
-#include "avisynth_c.h"
+#ifdef _WIN32
+  #include <windows.h>
+  #define AVISYNTH_LIB "avisynth"
+  #include "avisynth_c.h"
+#else
+  #include "avxsynth_c.h"
+  #include <dlfcn.h>
+  #include "avxsynth_c.h"
+  #define AVISYNTH_LIB "libavxsynth.so"
+
+  #define LoadLibrary(x) dlopen(x, RTLD_NOW | RTLD_LOCAL)
+  #define GetProcAddress dlsym
+  #define FreeLibrary dlclose
+#endif
 #define AVSC_DECLARE_FUNC(name) name##_func name
 
 /* AVS uses a versioned interface to control backwards compatibility */
@@ -45,7 +56,7 @@ typedef struct
 {
     AVS_Clip *clip;
     AVS_ScriptEnvironment *env;
-    HMODULE library;
+    void *library;
     struct
     {
         AVSC_DECLARE_FUNC( avs_clip_get_error );
@@ -60,13 +71,15 @@ typedef struct
         AVSC_DECLARE_FUNC( avs_release_value );
         AVSC_DECLARE_FUNC( avs_release_video_frame );
         AVSC_DECLARE_FUNC( avs_take_clip );
+        AVSC_DECLARE_FUNC( avs_bit_blt );
+        AVSC_DECLARE_FUNC( avs_get_audio );
     } func;
 } avs_hnd_t;
 
 /* load the library and functions we require from it */
 static int internal_avs_load_library( avs_hnd_t *h )
 {
-    h->library = LoadLibrary( "avisynth" );
+    h->library = LoadLibrary( AVISYNTH_LIB );
     if( !h->library )
         return -1;
     LOAD_AVS_FUNC( avs_clip_get_error, 0 );
@@ -81,6 +94,8 @@ static int internal_avs_load_library( avs_hnd_t *h )
     LOAD_AVS_FUNC( avs_release_value, 0 );
     LOAD_AVS_FUNC( avs_release_video_frame, 0 );
     LOAD_AVS_FUNC( avs_take_clip, 0 );
+    LOAD_AVS_FUNC( avs_bit_blt, 0 );
+    LOAD_AVS_FUNC( avs_get_audio, 0 );
     return 0;
 fail:
     FreeLibrary( h->library );

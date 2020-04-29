@@ -1,5 +1,5 @@
 /*====================================================================
-* ƒƒSŒŸo—pƒwƒbƒ_ƒtƒ@ƒCƒ‹
+* ãƒ­ã‚´æ¤œå‡ºç”¨ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«
 *===================================================================*/
 
 #ifndef ___LOGOSET_H
@@ -9,53 +9,53 @@
 //#define DEBUG_PRINT_DET
 
 
-/* ƒƒS•\Ž¦”»’è—pƒpƒ‰ƒ[ƒ^‰Šú’l */
-#define DEF_LOGO_RATE_TH_LOGO   50		/* ƒƒS•\Ž¦‚Æ”»’f‚·‚éŒ‹‰Êè‡’l(0-100) */
-#define DEF_LOGO_NUM_FADEIN     0		/* ƒtƒF[ƒhƒCƒ“ƒtƒŒ[ƒ€” */
-#define DEF_LOGO_NUM_FADEOUT    0		/* ƒtƒF[ƒhƒAƒEƒgƒtƒŒ[ƒ€” */
-#define DEF_LOGO_NUM_CUTLEFT    500		/* ŠJŽn’¼Œã‚ÌƒƒSŒŸo‚µ‚È‚¢ƒtƒŒ[ƒ€” */
-#define DEF_LOGO_NUM_CUTRIGHT   150		/* I—¹’¼‘O‚ÌƒƒSŒŸo‚µ‚È‚¢ƒtƒŒ[ƒ€”*/
-#define DEF_LOGO_NUM_ONWIDTH    25		/* ƒƒS•\Ž¦ON/OFFØ‚è‘Ö‚¦Å’áƒtƒŒ[ƒ€” */
-#define DEF_LOGO_NUM_ONLEVEL    21		/* ƒƒS•\Ž¦ON/OFFØ‚è‘Ö‚¦unclearƒŒƒxƒ‹ */
-#define DEF_LOGO_NUM_OFFWIDTH   0		/* ƒƒS•\Ž¦OFFØ‚è‘Ö‚¦Å’áƒtƒŒ[ƒ€”(0‚ÌŽžON’lŽg—p) */
-#define DEF_LOGO_THRES_YMAX     235		/* Å‘å‹P“x’l */
-#define DEF_LOGO_THRES_YMIN     16		/* Å¬‹P“x’l */
-#define DEF_LOGO_THRES_YEDGE    255		/* ƒGƒbƒWŒŸo‚ðs‚¤Å‘å‹P“x’l */
-#define DEF_LOGO_THRES_YDIF     40		/* ƒGƒbƒWŒŸo‚ðs‚¤Å’á‹P“x·x16 */
-#define DEF_LOGO_THRES_YSETDIF  222		/* ƒGƒbƒWŒŸo‚ðs‚¤‹P“x’l‚Åydif’l•ÏX—p */
-#define DEF_LOGO_THRES_YOFFEDG  255		/* ƒGƒbƒWŒŸo‚ÅƒƒS‚È‚µ”»’è‚ð‚µ‚È‚¢‹P“x’l */
-#define DEF_LOGO_NUM_AREASET    0		/* ƒGƒŠƒAŒŸo‚ðs‚¤ƒGƒŠƒA‚ÌÝ’è */
-#define DEF_LOGO_NUM_CLRRATE    8		/* •s–¾ŠmƒƒS‚ð–³Œø‚Æ”»’f‚·‚éƒtƒŒ[ƒ€Š„‡ */
-#define DEF_LOGO_AUTO_FADE      8		/* Ž©“®ŒŸoƒtƒF[ƒh */
-#define DEF_LOGO_AUTO_YEDGE     220		/* BS11ŒŸoŽž‚ÌƒGƒbƒWŒŸo‚ðs‚¤Å‘å‹P“x’l */
-#define DEF_LOGO_AUTO_YDIFMIN   24      /* ydif‚ðŽ©“®’²®‚·‚éê‡‚ÌÅ’á’l */
+/* ãƒ­ã‚´è¡¨ç¤ºåˆ¤å®šç”¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿åˆæœŸå€¤ */
+#define DEF_LOGO_RATE_TH_LOGO   50		/* ãƒ­ã‚´è¡¨ç¤ºã¨åˆ¤æ–­ã™ã‚‹çµæžœé–¾å€¤(0-100) */
+#define DEF_LOGO_NUM_FADEIN     0		/* ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¤ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+#define DEF_LOGO_NUM_FADEOUT    0		/* ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+#define DEF_LOGO_NUM_CUTLEFT    500		/* é–‹å§‹ç›´å¾Œã®ãƒ­ã‚´æ¤œå‡ºã—ãªã„ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+#define DEF_LOGO_NUM_CUTRIGHT   150		/* çµ‚äº†ç›´å‰ã®ãƒ­ã‚´æ¤œå‡ºã—ãªã„ãƒ•ãƒ¬ãƒ¼ãƒ æ•°*/
+#define DEF_LOGO_NUM_ONWIDTH    25		/* ãƒ­ã‚´è¡¨ç¤ºON/OFFåˆ‡ã‚Šæ›¿ãˆæœ€ä½Žãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+#define DEF_LOGO_NUM_ONLEVEL    21		/* ãƒ­ã‚´è¡¨ç¤ºON/OFFåˆ‡ã‚Šæ›¿ãˆunclearãƒ¬ãƒ™ãƒ« */
+#define DEF_LOGO_NUM_OFFWIDTH   0		/* ãƒ­ã‚´è¡¨ç¤ºOFFåˆ‡ã‚Šæ›¿ãˆæœ€ä½Žãƒ•ãƒ¬ãƒ¼ãƒ æ•°(0ã®æ™‚ONå€¤ä½¿ç”¨) */
+#define DEF_LOGO_THRES_YMAX     235		/* æœ€å¤§è¼åº¦å€¤ */
+#define DEF_LOGO_THRES_YMIN     16		/* æœ€å°è¼åº¦å€¤ */
+#define DEF_LOGO_THRES_YEDGE    255		/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†æœ€å¤§è¼åº¦å€¤ */
+#define DEF_LOGO_THRES_YDIF     40		/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†æœ€ä½Žè¼åº¦å·®x16 */
+#define DEF_LOGO_THRES_YSETDIF  222		/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†è¼åº¦å€¤ã§ydifå€¤å¤‰æ›´ç”¨ */
+#define DEF_LOGO_THRES_YOFFEDG  255		/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã§ãƒ­ã‚´ãªã—åˆ¤å®šã‚’ã—ãªã„è¼åº¦å€¤ */
+#define DEF_LOGO_NUM_AREASET    0		/* ã‚¨ãƒªã‚¢æ¤œå‡ºã‚’è¡Œã†ã‚¨ãƒªã‚¢ã®è¨­å®š */
+#define DEF_LOGO_NUM_CLRRATE    8		/* ä¸æ˜Žç¢ºãƒ­ã‚´ã‚’ç„¡åŠ¹ã¨åˆ¤æ–­ã™ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ å‰²åˆ */
+#define DEF_LOGO_AUTO_FADE      8		/* è‡ªå‹•æ¤œå‡ºãƒ•ã‚§ãƒ¼ãƒ‰ */
+#define DEF_LOGO_AUTO_YEDGE     220		/* BS11æ¤œå‡ºæ™‚ã®ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†æœ€å¤§è¼åº¦å€¤ */
+#define DEF_LOGO_AUTO_YDIFMIN   24      /* ydifã‚’è‡ªå‹•èª¿æ•´ã™ã‚‹å ´åˆã®æœ€ä½Žå€¤ */
 
-/* Ý’è‚·‚éè‡’lŠi”[ */
+/* è¨­å®šã™ã‚‹é–¾å€¤æ ¼ç´ */
 typedef struct {
-	short	rate_th_logo;			/* ƒƒS•\Ž¦‚Æ”»’f‚·‚éŒ‹‰Êè‡’l(0-100) */
-	short	num_fadein;				/* ƒtƒF[ƒhƒCƒ“ƒtƒŒ[ƒ€” */
-	short	num_fadeout;			/* ƒtƒF[ƒhƒAƒEƒgƒtƒŒ[ƒ€” */
-	short	num_cutleft;			/* ŠJŽn’¼Œã‚ÌƒƒSŒŸo‚µ‚È‚¢ƒtƒŒ[ƒ€” */
-	short	num_cutright;			/* I—¹’¼‘O‚ÌƒƒSŒŸo‚µ‚È‚¢ƒtƒŒ[ƒ€”*/
-	short	num_onwidth;			/* ƒƒS•\Ž¦ON/OFFØ‚è‘Ö‚¦Å’áƒtƒŒ[ƒ€” */
-	short	num_onlevel;			/* ƒƒS•\Ž¦ON/OFFØ‚è‘Ö‚¦unclearƒŒƒxƒ‹ */
-	short	num_offwidth;			/* ƒƒS•\Ž¦OFFØ‚è‘Ö‚¦Å’áƒtƒŒ[ƒ€” */
-	short	thres_ymax;				/* Å‘å‹P“x’l */
-	short	thres_ymin;				/* Å¬‹P“x’l */
-	short	thres_yedge;			/* ƒGƒbƒWŒŸo‚ðs‚¤Å‘å‹P“x’l */
-	short	thres_ydif;				/* ƒGƒbƒWŒŸo‚ðs‚¤Å’á‹P“x·x16 */
-	short	thres_ysetdif;			/* ƒGƒbƒWŒŸo‚ðs‚¤‹P“x’l‚Åydif’l•ÏX—p */
-	short	thres_yoffedg;			/* ƒGƒbƒWŒŸo‚ÅƒƒS‚È‚µ”»’è‚ð‚µ‚È‚¢‹P“x’l */
-	short	num_areaset;			/* ƒGƒŠƒAŒŸo‚ðs‚¤ƒGƒŠƒA‚ÌÝ’è */
-	short	num_clrrate;			/* •s–¾ŠmƒƒS‚ð–³Œø‚Æ”»’f‚·‚éƒtƒŒ[ƒ€Š„‡ */
+	short	rate_th_logo;			/* ãƒ­ã‚´è¡¨ç¤ºã¨åˆ¤æ–­ã™ã‚‹çµæžœé–¾å€¤(0-100) */
+	short	num_fadein;				/* ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¤ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	short	num_fadeout;			/* ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	short	num_cutleft;			/* é–‹å§‹ç›´å¾Œã®ãƒ­ã‚´æ¤œå‡ºã—ãªã„ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	short	num_cutright;			/* çµ‚äº†ç›´å‰ã®ãƒ­ã‚´æ¤œå‡ºã—ãªã„ãƒ•ãƒ¬ãƒ¼ãƒ æ•°*/
+	short	num_onwidth;			/* ãƒ­ã‚´è¡¨ç¤ºON/OFFåˆ‡ã‚Šæ›¿ãˆæœ€ä½Žãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	short	num_onlevel;			/* ãƒ­ã‚´è¡¨ç¤ºON/OFFåˆ‡ã‚Šæ›¿ãˆunclearãƒ¬ãƒ™ãƒ« */
+	short	num_offwidth;			/* ãƒ­ã‚´è¡¨ç¤ºOFFåˆ‡ã‚Šæ›¿ãˆæœ€ä½Žãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	short	thres_ymax;				/* æœ€å¤§è¼åº¦å€¤ */
+	short	thres_ymin;				/* æœ€å°è¼åº¦å€¤ */
+	short	thres_yedge;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†æœ€å¤§è¼åº¦å€¤ */
+	short	thres_ydif;				/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†æœ€ä½Žè¼åº¦å·®x16 */
+	short	thres_ysetdif;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã‚’è¡Œã†è¼åº¦å€¤ã§ydifå€¤å¤‰æ›´ç”¨ */
+	short	thres_yoffedg;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºã§ãƒ­ã‚´ãªã—åˆ¤å®šã‚’ã—ãªã„è¼åº¦å€¤ */
+	short	num_areaset;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºã‚’è¡Œã†ã‚¨ãƒªã‚¢ã®è¨­å®š */
+	short	num_clrrate;			/* ä¸æ˜Žç¢ºãƒ­ã‚´ã‚’ç„¡åŠ¹ã¨åˆ¤æ–­ã™ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ å‰²åˆ */
 
-	short	auto_fade;				/* Ž©“®ŒŸoƒtƒF[ƒh */
-	short	auto_bs11;				/* BS11Ž©“®ŒŸoithres_yedgeŽ©“®Ý’èj */
+	short	auto_fade;				/* è‡ªå‹•æ¤œå‡ºãƒ•ã‚§ãƒ¼ãƒ‰ */
+	short	auto_bs11;				/* BS11è‡ªå‹•æ¤œå‡ºï¼ˆthres_yedgeè‡ªå‹•è¨­å®šï¼‰ */
 } LOGO_THRESREC;
 
 
 
-/* ƒƒSƒf[ƒ^ */
+/* ãƒ­ã‚´ãƒ‡ãƒ¼ã‚¿ */
 typedef struct {
 	LOGO_FILE_HEADER lfh;
 	LOGO_HEADER      lgh;
@@ -63,127 +63,127 @@ typedef struct {
 } LOGO_READREC;
 
 
-#define LOGO_AREANUM 7		/* ƒGƒŠƒAŒŸo‚ÌƒGƒŠƒAÅ‘å” */
+#define LOGO_AREANUM 7		/* ã‚¨ãƒªã‚¢æ¤œå‡ºã®ã‚¨ãƒªã‚¢æœ€å¤§æ•° */
 
-/* ƒGƒŠƒAŒŸo“à•”‰‰ŽZ—p */
+/* ã‚¨ãƒªã‚¢æ¤œå‡ºå†…éƒ¨æ¼”ç®—ç”¨ */
 typedef struct {
-	long     total_area;			/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éÅ’á‰æ‘f” */
-	long     total_area1;			/* ”wŒiƒGƒŠƒAŽæ“¾‰ÓŠ‚Ì‘” */
-	long     total_area2;			/* ƒƒSƒGƒŠƒAŽæ“¾‰ÓŠ‚Ì‘” */
-	long     xmin;					/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éƒGƒŠƒAÀ•W */
-	long     xmax;					/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éƒGƒŠƒAÀ•W */
-	long     ymin;					/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éƒGƒŠƒAÀ•W */
-	long     ymax;					/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éƒGƒŠƒAÀ•W */
+	long     total_area;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹æœ€ä½Žç”»ç´ æ•° */
+	long     total_area1;			/* èƒŒæ™¯ã‚¨ãƒªã‚¢å–å¾—ç®‡æ‰€ã®ç·æ•° */
+	long     total_area2;			/* ãƒ­ã‚´ã‚¨ãƒªã‚¢å–å¾—ç®‡æ‰€ã®ç·æ•° */
+	long     xmin;					/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹ã‚¨ãƒªã‚¢åº§æ¨™ */
+	long     xmax;					/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹ã‚¨ãƒªã‚¢åº§æ¨™ */
+	long     ymin;					/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹ã‚¨ãƒªã‚¢åº§æ¨™ */
+	long     ymax;					/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹ã‚¨ãƒªã‚¢åº§æ¨™ */
 } LOGO_PARAMAREAREC;
 
-/* “à•”‰‰ŽZ—pƒƒSƒf[ƒ^ */
+/* å†…éƒ¨æ¼”ç®—ç”¨ãƒ­ã‚´ãƒ‡ãƒ¼ã‚¿ */
 typedef struct {
-	short    yx, yy;      			/* Šî–{ˆÊ’u               */
-	short    yh, yw;      			/* ƒƒS‚‚³E•           */
-	short    *dp_y;					/* ƒƒS“§‰ß“x */
-	short    *y;					/* ƒƒS‹P“x   */
+	short    yx, yy;      			/* åŸºæœ¬ä½ç½®               */
+	short    yh, yw;      			/* ãƒ­ã‚´é«˜ã•ãƒ»å¹…           */
+	short    *dp_y;					/* ãƒ­ã‚´é€éŽåº¦ */
+	short    *y;					/* ãƒ­ã‚´è¼åº¦   */
 
-	char     *dif_y_col;			/* ƒGƒbƒWŒŸoi‰¡j */
-	char     *dif_y_row;			/* ƒGƒbƒWŒŸoicj */
-	short    *area_y;				/* ƒƒSƒGƒŠƒAî•ñi0:’†ŠÔ 1:”wŒi 2:ƒƒSj */
-	short    most_logo_y;			/* Å‚à‘½‚¢ƒƒS‚Ì‹P“x’l */
-	short    thres_dp_y;			/* ƒƒS“§‰ß“xè‡’l */
+	char     *dif_y_col;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºï¼ˆæ¨ªï¼‰ */
+	char     *dif_y_row;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºï¼ˆç¸¦ï¼‰ */
+	short    *area_y;				/* ãƒ­ã‚´ã‚¨ãƒªã‚¢æƒ…å ±ï¼ˆ0:ä¸­é–“ 1:èƒŒæ™¯ 2:ãƒ­ã‚´ï¼‰ */
+	short    most_logo_y;			/* æœ€ã‚‚å¤šã„ãƒ­ã‚´ã®è¼åº¦å€¤ */
+	short    thres_dp_y;			/* ãƒ­ã‚´é€éŽåº¦é–¾å€¤ */
 
-	/* ƒƒS“à—eŠm”F—p */
-	long     total_dif;				/* ƒGƒbƒWŒŸo‰ÓŠ‚Ì‘” */
-	long     total_dif_c1;			/* ƒGƒbƒWŒŸo‰ÓŠ‚Ì‘”iƒCƒ“ƒ^[ƒŒ[ƒX•ª—£—pj */
-	long     total_dif_c2;			/* ƒGƒbƒWŒŸo‰ÓŠ‚Ì‘”iƒCƒ“ƒ^[ƒŒ[ƒX•ª—£—pj */
+	/* ãƒ­ã‚´å†…å®¹ç¢ºèªç”¨ */
+	long     total_dif;				/* ã‚¨ãƒƒã‚¸æ¤œå‡ºç®‡æ‰€ã®ç·æ•° */
+	long     total_dif_c1;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºç®‡æ‰€ã®ç·æ•°ï¼ˆã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹åˆ†é›¢ç”¨ï¼‰ */
+	long     total_dif_c2;			/* ã‚¨ãƒƒã‚¸æ¤œå‡ºç®‡æ‰€ã®ç·æ•°ï¼ˆã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹åˆ†é›¢ç”¨ï¼‰ */
 
-	long     num_local;				/* ƒGƒŠƒAŒŸoƒ[ƒJƒ‹ƒGƒŠƒA” */
-	short    scale_area2;			/* ƒGƒŠƒAŒŸoŽž‚ÌƒƒSƒGƒŠƒA‹P“x */
-	LOGO_PARAMAREAREC area[LOGO_AREANUM];		/* ƒGƒŠƒAŒŸo‚ÅŽg—p‚·‚éƒGƒŠƒAî•ñ */
+	long     num_local;				/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ãƒ¼ã‚«ãƒ«ã‚¨ãƒªã‚¢æ•° */
+	short    scale_area2;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºæ™‚ã®ãƒ­ã‚´ã‚¨ãƒªã‚¢è¼åº¦ */
+	LOGO_PARAMAREAREC area[LOGO_AREANUM];		/* ã‚¨ãƒªã‚¢æ¤œå‡ºã§ä½¿ç”¨ã™ã‚‹ã‚¨ãƒªã‚¢æƒ…å ± */
 } LOGO_PARAMREC;
 
 
-/* ƒtƒF[ƒh”»’f—pƒXƒeƒbƒv” */
-#define LOGO_FADE_STEP 31			/* Å‘åƒtƒF[ƒhŒvŽZƒXƒeƒbƒv”iƒtƒF[ƒh’l{‚Pj */
-#define LOGO_FADE_OFST 2			/* ƒqƒXƒgƒOƒ‰ƒ€‘OŒã•ÛŽ” */
-#define LOGO_FADE_MAXLEVEL LOGO_FADE_STEP+(LOGO_FADE_OFST*2)+1	/* ƒtƒF[ƒhƒqƒXƒgƒOƒ‰ƒ€Å‘å•ÛŽ” */
+/* ãƒ•ã‚§ãƒ¼ãƒ‰åˆ¤æ–­ç”¨ã‚¹ãƒ†ãƒƒãƒ—æ•° */
+#define LOGO_FADE_STEP 31			/* æœ€å¤§ãƒ•ã‚§ãƒ¼ãƒ‰è¨ˆç®—ã‚¹ãƒ†ãƒƒãƒ—æ•°ï¼ˆãƒ•ã‚§ãƒ¼ãƒ‰å€¤ï¼‹ï¼‘ï¼‰ */
+#define LOGO_FADE_OFST 2			/* ãƒ’ã‚¹ãƒˆã‚°ãƒ©ãƒ å‰å¾Œä¿æŒæ•° */
+#define LOGO_FADE_MAXLEVEL LOGO_FADE_STEP+(LOGO_FADE_OFST*2)+1	/* ãƒ•ã‚§ãƒ¼ãƒ‰ãƒ’ã‚¹ãƒˆã‚°ãƒ©ãƒ æœ€å¤§ä¿æŒæ•° */
 
-/* ƒGƒŠƒAŒŸo—p‚Ì‚P‰æ‘œ•ª‚ÌƒƒS‰‰ŽZƒf[ƒ^Ši”[ */
+/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ã®ï¼‘ç”»åƒåˆ†ã®ãƒ­ã‚´æ¼”ç®—ãƒ‡ãƒ¼ã‚¿æ ¼ç´ */
 typedef struct {
-	long	hista_areaoff[256];		/* ƒGƒŠƒAŒŸo—pƒƒS‚È‚µ‹P“x‘˜a */
-	long	hista_areaon[256];		/* ƒGƒŠƒAŒŸo—pƒƒS‚ ‚è‹P“x‘˜a */
-	long	hista_areacal[256];		/* ƒGƒŠƒAŒŸo—pƒƒS—\‘z‹P“x‘˜a */
-	long	num_hista_off;			/* ƒGƒŠƒAŒŸo—pƒƒS‚È‚µ‹P“x‰ñ” */
-	long	num_hista_on;			/* ƒGƒŠƒAŒŸo—pƒƒS‚ ‚è‹P“x‰ñ” */
+	long	hista_areaoff[256];		/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ãƒ­ã‚´ãªã—è¼åº¦ç·å’Œ */
+	long	hista_areaon[256];		/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ãƒ­ã‚´ã‚ã‚Šè¼åº¦ç·å’Œ */
+	long	hista_areacal[256];		/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ãƒ­ã‚´äºˆæƒ³è¼åº¦ç·å’Œ */
+	long	num_hista_off;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ãƒ­ã‚´ãªã—è¼åº¦å›žæ•° */
+	long	num_hista_on;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºç”¨ãƒ­ã‚´ã‚ã‚Šè¼åº¦å›žæ•° */
 
-	short	rate_areavalid;			/* ƒGƒŠƒAŒŸoƒƒS—LŒø—ÌˆæŠ„‡ */
-	short	rate_arealogo;			/* ƒGƒŠƒAŒŸoƒƒSŒ‹‰Ê */
-	short	diff_arealogo;			/* ƒGƒŠƒAŒŸoƒƒS—L–³‚Ì‹P“x·i‘S‘Ìj */
-	short	diff1_arealogo;			/* ƒGƒŠƒAŒŸoƒƒS—L–³‚Ì‹P“x·iƒƒS‚È‚µƒGƒŠƒAj */
-	short	diff2_arealogo;			/* ƒGƒŠƒAŒŸoƒƒS—L–³‚Ì‹P“x·iƒƒS‚ ‚èƒGƒŠƒAj */
-	short	vari_arealogo_off;		/* ƒGƒŠƒAŒŸoƒƒS—L–³‚ÌŽü•Ó•ªŽUiƒƒS‚È‚µƒGƒŠƒAj */
-	short	vari_arealogo_cal;		/* ƒGƒŠƒAŒŸoƒƒS—L–³‚ÌŽü•Ó•ªŽUiƒƒSŒvŽZƒGƒŠƒAj */
-	short	vari_arealogo_on;		/* ƒGƒŠƒAŒŸoƒƒS—L–³‚ÌŽü•Ó•ªŽUiƒƒS‚ ‚èƒGƒŠƒAj */
+	short	rate_areavalid;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰åŠ¹é ˜åŸŸå‰²åˆ */
+	short	rate_arealogo;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´çµæžœ */
+	short	diff_arealogo;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®è¼åº¦å·®ï¼ˆå…¨ä½“ï¼‰ */
+	short	diff1_arealogo;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®è¼åº¦å·®ï¼ˆãƒ­ã‚´ãªã—ã‚¨ãƒªã‚¢ï¼‰ */
+	short	diff2_arealogo;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®è¼åº¦å·®ï¼ˆãƒ­ã‚´ã‚ã‚Šã‚¨ãƒªã‚¢ï¼‰ */
+	short	vari_arealogo_off;		/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®å‘¨è¾ºåˆ†æ•£ï¼ˆãƒ­ã‚´ãªã—ã‚¨ãƒªã‚¢ï¼‰ */
+	short	vari_arealogo_cal;		/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®å‘¨è¾ºåˆ†æ•£ï¼ˆãƒ­ã‚´è¨ˆç®—ã‚¨ãƒªã‚¢ï¼‰ */
+	short	vari_arealogo_on;		/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æœ‰ç„¡ã®å‘¨è¾ºåˆ†æ•£ï¼ˆãƒ­ã‚´ã‚ã‚Šã‚¨ãƒªã‚¢ï¼‰ */
 } LOGO_CALCAREAREC;
 
-/* ‚P‰æ‘œ•ª‚ÌƒƒS‰‰ŽZƒf[ƒ^Ši”[ */
+/* ï¼‘ç”»åƒåˆ†ã®ãƒ­ã‚´æ¼”ç®—ãƒ‡ãƒ¼ã‚¿æ ¼ç´ */
 typedef struct {
-	long	hist_y[LOGO_FADE_MAXLEVEL];	/* ƒtƒF[ƒh—p‹P“xƒqƒXƒgƒOƒ‰ƒ€ */
-	long	fade_calcstep;				/* ƒtƒF[ƒh—p‹P“xƒqƒXƒgƒOƒ‰ƒ€‚ÌŒvŽZ—pƒXƒeƒbƒv” */
+	long	hist_y[LOGO_FADE_MAXLEVEL];	/* ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨è¼åº¦ãƒ’ã‚¹ãƒˆã‚°ãƒ©ãƒ  */
+	long	fade_calcstep;				/* ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨è¼åº¦ãƒ’ã‚¹ãƒˆã‚°ãƒ©ãƒ ã®è¨ˆç®—ç”¨ã‚¹ãƒ†ãƒƒãƒ—æ•° */
 	
-	long	cnt_logooff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ” */
-	long	cnt_logoon;				/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ” */
-	long	cnt_logomv;				/* ƒƒSŒŸo•s‰Â‚Æ”»’f‚µ‚½‰ñ” */
-	long	cnt_logovc;				/* ƒƒSŒŸo—LŒøƒJƒEƒ“ƒg” */
+	long	cnt_logooff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	cnt_logoon;				/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	cnt_logomv;				/* ãƒ­ã‚´æ¤œå‡ºä¸å¯ã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	cnt_logovc;				/* ãƒ­ã‚´æ¤œå‡ºæœ‰åŠ¹ã‚«ã‚¦ãƒ³ãƒˆæ•° */
 
-	long	cntf_logooff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	cntf_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	cntf_logost;			/* ƒƒSU•‚È‚µ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	cntf_logovc;			/* ƒƒSŒŸo—LŒøƒJƒEƒ“ƒg”i¬U•j */
-	long	cntopp_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ”i‰æ‘f”½“]Žžj */
+	long	cntf_logooff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	cntf_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	cntf_logost;			/* ãƒ­ã‚´æŒ¯å¹…ãªã—åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	cntf_logovc;			/* ãƒ­ã‚´æ¤œå‡ºæœ‰åŠ¹ã‚«ã‚¦ãƒ³ãƒˆæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	cntopp_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆç”»ç´ åè»¢æ™‚ï¼‰ */
 
-	long	sum_areaoff;			/* ¬U•ƒtƒF[ƒh—pƒƒS‚È‚µ‹P“x‘˜a */
-	long	sum_areaon;				/* ¬U•ƒtƒF[ƒh—pƒƒS‚ ‚è‹P“x‘˜a */
-	long	sum_areadif;			/* ¬U•ƒtƒF[ƒh—pƒƒS—‘z‹P“x·‚Ì‘˜a */
-	long	sum_areanum;			/* ¬U•ƒtƒF[ƒh—pƒƒS”»’f‰ñ” */
+	long	sum_areaoff;			/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´ãªã—è¼åº¦ç·å’Œ */
+	long	sum_areaon;				/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´ã‚ã‚Šè¼åº¦ç·å’Œ */
+	long	sum_areadif;			/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´ç†æƒ³è¼åº¦å·®ã®ç·å’Œ */
+	long	sum_areanum;			/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´åˆ¤æ–­å›žæ•° */
 
-	long	cnt_offedg;				/* •s–¾Šm‚ÈƒƒS‚È‚µ”»’f‰ñ” */
-	long	cntf_offedg;			/* •s–¾Šm‚ÈƒƒS‚È‚µ”»’f‰ñ”i¬U•j */
-	long	cnts_logooff;			/* ”÷–­‚ÈƒƒS‰e•”•ª‚ðƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ” */
-	long	cnts_logoon;			/* ”÷–­‚ÈƒƒS‰e•”•ª‚ðƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ” */
+	long	cnt_offedg;				/* ä¸æ˜Žç¢ºãªãƒ­ã‚´ãªã—åˆ¤æ–­å›žæ•° */
+	long	cntf_offedg;			/* ä¸æ˜Žç¢ºãªãƒ­ã‚´ãªã—åˆ¤æ–­å›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	cnts_logooff;			/* å¾®å¦™ãªãƒ­ã‚´å½±éƒ¨åˆ†ã‚’ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	cnts_logoon;			/* å¾®å¦™ãªãƒ­ã‚´å½±éƒ¨åˆ†ã‚’ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•° */
 
-	long	total_dif;				/* ƒGƒbƒWŒŸo‰ÓŠ‚Ì‘” */
+	long	total_dif;				/* ã‚¨ãƒƒã‚¸æ¤œå‡ºç®‡æ‰€ã®ç·æ•° */
 
-	long	vc_cntd_logooff;		/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ” */
-	long	vc_cntd_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ” */
-	long	vc_cntf_logooff;		/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	vc_cntf_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	vc_cntd_voff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½—LŒøs” */
-	long	vc_cntd_von;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½—LŒøs” */
-	long	vc_cntf_voff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½—LŒøs”i¬U•j */
-	long	vc_cntf_von;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½—LŒøs”i¬U•j */
+	long	vc_cntd_logooff;		/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	vc_cntd_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	vc_cntf_logooff;		/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntf_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntd_voff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•° */
+	long	vc_cntd_von;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•° */
+	long	vc_cntf_voff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntf_von;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
 
-	short	rate_logoon;			/* ƒƒSŒŸoŒ‹‰Ê(0-100) */
-	short	rate_fade;				/* ƒƒSƒtƒF[ƒhó‘ÔŒŸoŒ‹‰Ê(0-100) */
-	short	flag_nosample;			/* ƒƒSƒTƒ“ƒvƒ‹•s‘«ŒŸo•s‰Â(0-1) */
-	short	flag_nofadesm;			/* ƒƒSƒtƒF[ƒhƒTƒ“ƒvƒ‹•s‘«(0-1) */
-	short	rank_unclear;			/* ƒƒSŒŸo•sˆÀ’è“x(0-3,9) */
+	short	rate_logoon;			/* ãƒ­ã‚´æ¤œå‡ºçµæžœ(0-100) */
+	short	rate_fade;				/* ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰çŠ¶æ…‹æ¤œå‡ºçµæžœ(0-100) */
+	short	flag_nosample;			/* ãƒ­ã‚´ã‚µãƒ³ãƒ—ãƒ«ä¸è¶³æ¤œå‡ºä¸å¯(0-1) */
+	short	flag_nofadesm;			/* ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰ã‚µãƒ³ãƒ—ãƒ«ä¸è¶³(0-1) */
+	short	rank_unclear;			/* ãƒ­ã‚´æ¤œå‡ºä¸å®‰å®šåº¦(0-3,9) */
 
-	short	rate_arealogo;			/* ƒGƒŠƒAŒŸoƒƒSŒ‹‰Ê */
-	LOGO_CALCAREAREC area[LOGO_AREANUM];	/* ŠeƒGƒŠƒAŒŸoƒƒS‰‰ŽZî•ñ */
+	short	rate_arealogo;			/* ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´çµæžœ */
+	LOGO_CALCAREAREC area[LOGO_AREANUM];	/* å„ã‚¨ãƒªã‚¢æ¤œå‡ºãƒ­ã‚´æ¼”ç®—æƒ…å ± */
 
-	short	rate_areaavg_t;			/* ¬U•ƒtƒF[ƒh—pƒƒSŒŸoŒ‹‰Ê(0-100) */
-	long	sum_areanum_t;			/* ¬U•ƒtƒF[ƒh—pƒƒSŒŸo‰ñ” */
+	short	rate_areaavg_t;			/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´æ¤œå‡ºçµæžœ(0-100) */
+	long	sum_areanum_t;			/* å°æŒ¯å¹…ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ­ã‚´æ¤œå‡ºå›žæ•° */
 } LOGO_CALCREC;
 
 
-/* —LŒøƒf[ƒ^”‘ª’è—p */
+/* æœ‰åŠ¹ãƒ‡ãƒ¼ã‚¿æ•°æ¸¬å®šç”¨ */
 typedef struct {
-	long	vc_cntd_logooff;		/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ” */
-	long	vc_cntd_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ” */
-	long	vc_cntf_logooff;		/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	vc_cntf_logoon;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½‰ñ”i¬U•j */
-	long	vc_cntd_voff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½—LŒøs” */
-	long	vc_cntd_von;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½—LŒøs” */
-	long	vc_cntf_voff;			/* ƒƒS‚È‚µ‚Æ”»’f‚µ‚½—LŒøs”i¬U•j */
-	long	vc_cntf_von;			/* ƒƒS‚ ‚è‚Æ”»’f‚µ‚½—LŒøs”i¬U•j */
+	long	vc_cntd_logooff;		/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	vc_cntd_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•° */
+	long	vc_cntf_logooff;		/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntf_logoon;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸå›žæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntd_voff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•° */
+	long	vc_cntd_von;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•° */
+	long	vc_cntf_voff;			/* ãƒ­ã‚´ãªã—ã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
+	long	vc_cntf_von;			/* ãƒ­ã‚´ã‚ã‚Šã¨åˆ¤æ–­ã—ãŸæœ‰åŠ¹è¡Œæ•°ï¼ˆå°æŒ¯å¹…ï¼‰ */
 	long	cntd_last_on;
 	long	cntd_last_off;
 	long	cntf_last_on;
@@ -191,62 +191,62 @@ typedef struct {
 } LOGO_VCCALCREC;
 
 
-/* ƒƒS•\Ž¦ŠúŠÔ‚ÌÅ‘å‘g” */
+/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ã®æœ€å¤§çµ„æ•° */
 #define LOGO_FIND_MAX 256
 
-/* ÅIƒf[ƒ^‚É•K—v‚Èî•ñ */
+/* æœ€çµ‚ãƒ‡ãƒ¼ã‚¿ã«å¿…è¦ãªæƒ…å ± */
 typedef struct {
-	long	frm_rise;				/* ŠeŠJŽnƒtƒŒ[ƒ€ */
-	long	frm_fall;				/* ŠeI—¹ƒtƒŒ[ƒ€ */
-	long	frm_rise_l;				/* ŠeŠJŽnƒtƒŒ[ƒ€Œó•âŠJŽn */
-	long	frm_rise_r;				/* ŠeŠJŽnƒtƒŒ[ƒ€Œó•âI—¹ */
-	long	frm_fall_l;				/* ŠeI—¹ƒtƒŒ[ƒ€Œó•âŠJŽn */
-	long	frm_fall_r;				/* ŠeI—¹ƒtƒŒ[ƒ€Œó•âI—¹ */
-	char	fade_rise;				/* ŠeŠJŽnƒtƒF[ƒhƒCƒ“ó‘Ô(0 or fadein) */
-	char	fade_fall;				/* ŠeI—¹ƒtƒF[ƒhƒAƒEƒgó‘Ô(0 or fadeout) */
-	char	intl_rise;				/* ŠeŠJŽnƒCƒ“ƒ^[ƒŒ[ƒXó‘Ô(0:ALL 1:TOP 2:BTM) */
-	char	intl_fall;				/* ŠeI—¹ƒCƒ“ƒ^[ƒŒ[ƒXó‘Ô(0:ALL 1:TOP 2:BTM) */
+	long	frm_rise;				/* å„é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ  */
+	long	frm_fall;				/* å„çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ  */
+	long	frm_rise_l;				/* å„é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ å€™è£œé–‹å§‹ */
+	long	frm_rise_r;				/* å„é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ å€™è£œçµ‚äº† */
+	long	frm_fall_l;				/* å„çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ å€™è£œé–‹å§‹ */
+	long	frm_fall_r;				/* å„çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ å€™è£œçµ‚äº† */
+	char	fade_rise;				/* å„é–‹å§‹ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¤ãƒ³çŠ¶æ…‹(0 or fadein) */
+	char	fade_fall;				/* å„çµ‚äº†ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆçŠ¶æ…‹(0 or fadeout) */
+	char	intl_rise;				/* å„é–‹å§‹ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹çŠ¶æ…‹(0:ALL 1:TOP 2:BTM) */
+	char	intl_fall;				/* å„çµ‚äº†ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹çŠ¶æ…‹(0:ALL 1:TOP 2:BTM) */
 } LOGO_OUTSUBREC;
 
-/* ‘SƒtƒŒ[ƒ€‰‰ŽZ‚É•K—v‚Èƒf[ƒ^Ši”[ */
+/* å…¨ãƒ•ãƒ¬ãƒ¼ãƒ æ¼”ç®—ã«å¿…è¦ãªãƒ‡ãƒ¼ã‚¿æ ¼ç´ */
 typedef struct {
-	long	num_frames;				/* ƒtƒŒ[ƒ€” */
-	char	*rate_logoon;			/* ŠeƒtƒŒ[ƒ€ƒƒSŒŸoŒ‹‰Ê(0-100) */
-	char	*rate_fade;				/* ŠeƒtƒŒ[ƒ€ƒƒSƒtƒF[ƒhó‘ÔŒŸoŒ‹‰Ê(0-100) */
-	char	*flag_nosample;			/* ŠeƒtƒŒ[ƒ€ƒƒSƒTƒ“ƒvƒ‹•s‘«ŒŸo•s‰Â(b0-1:0-1)  */
-	char	*flag_nofadesm;			/* ŠeƒtƒŒ[ƒ€ƒƒSƒtƒF[ƒhƒTƒ“ƒvƒ‹•s‘«ŒŸo•s‰Â(b0-1:0-1)  */
-	char	*rate_logooni1;			/* ŠeƒtƒŒ[ƒ€ƒƒSŒŸoŒ‹‰ÊƒCƒ“ƒ^[ƒŒ[ƒXŠï”(0-100) */
-	char	*rate_logooni2;			/* ŠeƒtƒŒ[ƒ€ƒƒSŒŸoŒ‹‰ÊƒCƒ“ƒ^[ƒŒ[ƒX‹ô”(0-100) */
-	char	*rate_fadei1;			/* ŠeƒtƒŒ[ƒ€ƒƒSƒtƒF[ƒhó‘ÔŒŸoŒ‹‰Ê(0-100) */
-	char	*rate_fadei2;			/* ŠeƒtƒŒ[ƒ€ƒƒSƒtƒF[ƒhó‘ÔŒŸoŒ‹‰Ê(0-100) */
-	char	*rank_unclear;			/* ŠeƒtƒŒ[ƒ€ƒƒSŒŸo•sˆÀ’è“x(0-3,9)  */
-	char	*flag_logoon;			/* ŠeƒtƒŒ[ƒ€ƒƒSŒŸoŒ‹‰Ê‚Qi”•\‹L(0-1) */
+	long	num_frames;				/* ãƒ•ãƒ¬ãƒ¼ãƒ æ•° */
+	char	*rate_logoon;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´æ¤œå‡ºçµæžœ(0-100) */
+	char	*rate_fade;				/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰çŠ¶æ…‹æ¤œå‡ºçµæžœ(0-100) */
+	char	*flag_nosample;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´ã‚µãƒ³ãƒ—ãƒ«ä¸è¶³æ¤œå‡ºä¸å¯(b0-1:0-1)  */
+	char	*flag_nofadesm;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰ã‚µãƒ³ãƒ—ãƒ«ä¸è¶³æ¤œå‡ºä¸å¯(b0-1:0-1)  */
+	char	*rate_logooni1;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´æ¤œå‡ºçµæžœã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹å¥‡æ•°(0-100) */
+	char	*rate_logooni2;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´æ¤œå‡ºçµæžœã‚¤ãƒ³ã‚¿ãƒ¼ãƒ¬ãƒ¼ã‚¹å¶æ•°(0-100) */
+	char	*rate_fadei1;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰çŠ¶æ…‹æ¤œå‡ºçµæžœ(0-100) */
+	char	*rate_fadei2;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´ãƒ•ã‚§ãƒ¼ãƒ‰çŠ¶æ…‹æ¤œå‡ºçµæžœ(0-100) */
+	char	*rank_unclear;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´æ¤œå‡ºä¸å®‰å®šåº¦(0-3,9)  */
+	char	*flag_logoon;			/* å„ãƒ•ãƒ¬ãƒ¼ãƒ ãƒ­ã‚´æ¤œå‡ºçµæžœï¼’é€²æ•°è¡¨è¨˜(0-1) */
 
-	long	frm_leftstart;			/* —LŒøŠJŽnƒtƒŒ[ƒ€ */
-	long	frm_rightend;			/* —LŒøI—¹ƒtƒŒ[ƒ€ */
-	LOGO_OUTSUBREC workres[LOGO_FIND_MAX];	/* ƒƒS•\Ž¦ŠúŠÔŒ‹‰Ê‚Ìì‹Æ—Ìˆæ */
+	long	frm_leftstart;			/* æœ‰åŠ¹é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ  */
+	long	frm_rightend;			/* æœ‰åŠ¹çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ  */
+	LOGO_OUTSUBREC workres[LOGO_FIND_MAX];	/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“çµæžœã®ä½œæ¥­é ˜åŸŸ */
 
-	/* ÅIo—Í */
-	long	num_find;					/* ƒƒS•\Ž¦ŠúŠÔ‚Ì‘g” */
-	LOGO_OUTSUBREC res[LOGO_FIND_MAX];	/* ƒƒS•\Ž¦ŠúŠÔ‚ÌŒ‹‰Ê */
+	/* æœ€çµ‚å‡ºåŠ› */
+	long	num_find;					/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ã®çµ„æ•° */
+	LOGO_OUTSUBREC res[LOGO_FIND_MAX];	/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ã®çµæžœ */
 } LOGO_FRAMEREC;
 
 
-/* ƒf[ƒ^ˆêŽ® */
+/* ãƒ‡ãƒ¼ã‚¿ä¸€å¼ */
 typedef struct {
 	LOGO_READREC	readdat;
 	LOGO_PARAMREC	paramdat;
 	LOGO_CALCREC	calcdat1;
 	LOGO_CALCREC	calcdat2;
 	LOGO_FRAMEREC	framedat;
-	LOGO_THRESREC	thresdat;		/* è‡’lÝ’è’l */
+	LOGO_THRESREC	thresdat;		/* é–¾å€¤è¨­å®šå€¤ */
 } LOGO_DATASET;
 
 
-/* ÅIŒ‹‰Ê */
+/* æœ€çµ‚çµæžœ */
 typedef struct {
-	long	num_find;					/* ƒƒS•\Ž¦ŠúŠÔ‚Ì‘g” */
-	LOGO_OUTSUBREC res[LOGO_FIND_MAX];	/* ƒƒS•\Ž¦ŠúŠÔ‚ÌŒ‹‰Ê */
+	long	num_find;					/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ã®çµ„æ•° */
+	LOGO_OUTSUBREC res[LOGO_FIND_MAX];	/* ãƒ­ã‚´è¡¨ç¤ºæœŸé–“ã®çµæžœ */
 } LOGO_RESULTOUTREC;
 
 

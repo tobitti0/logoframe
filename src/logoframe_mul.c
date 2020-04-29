@@ -1,16 +1,34 @@
 //====================================================================
-// •Ўђ”ѓЌѓSЏ€—ќ—p‚МЉЦђ”
+// и¤‡ж•°гѓ­г‚ґе‡¦зђ†з”ЁгЃ®й–ўж•°
 //====================================================================
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
 #include <windows.h>
-#include <string.h>
 #include <io.h>
+#endif
+#include <string.h>
 #include <fcntl.h>
 #include "logo.h"
 #include "logoset.h"
 #include "logoset_mul.h"
+
+#ifndef _WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <glob.h>
+#include <unistd.h>
+#include <strings.h>
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+typedef unsigned char BYTE;
+#ifdef __GNUC__
+typedef long long int INT64;
+#else
+typedef __int64 INT64;
+#endif
+#endif
 
 // logo function of logoframe
 extern void LogoInit(LOGO_DATASET *pl);
@@ -31,7 +49,7 @@ extern int  LogoResultAdd(LOGO_RESULTOUTREC *prs, LOGO_DATASET *pl, int autosel)
 
 
 //---------------------------------------------------------------------
-// Shift-JIS‚М‚QѓoѓCѓg•¶Ћљѓ`ѓFѓbѓN
+// Shift-JISгЃ®пј’гѓђг‚¤гѓ€ж–‡е­—гѓЃг‚§гѓѓг‚Ї
 //---------------------------------------------------------------------
 int sjis_multibyte(char *str){
 	unsigned char code;
@@ -49,7 +67,7 @@ int sjis_multibyte(char *str){
 }
 
 //---------------------------------------------------------------------
-// Shift-JISѓRЃ[ѓhЌl—¶‚Мstrrchr
+// Shift-JISг‚ігѓјгѓ‰иЂѓж…®гЃ®strrchr
 //---------------------------------------------------------------------
 char *strrchrj(char *str, char ch){
 	char *dst;
@@ -69,7 +87,7 @@ char *strrchrj(char *str, char ch){
 	return dst;
 }
 //---------------------------------------------------------------------
-// Shift-JISѓRЃ[ѓhЌl—¶‚Мstrchr
+// Shift-JISг‚ігѓјгѓ‰иЂѓж…®гЃ®strchr
 //---------------------------------------------------------------------
 //char *strchrj(char *str, char ch){
 //	char *dst;
@@ -91,18 +109,24 @@ char *strrchrj(char *str, char ch){
 
 
 //---------------------------------------------------------------------
-// ЋАЌsѓtѓ@ѓCѓ‹‚МѓpѓX‚рЋж“ѕ
-// ***** windows API‚рЋg—p *****
+// е®џиЎЊгѓ•г‚Ўг‚¤гѓ«гЃ®гѓ‘г‚№г‚’еЏ–еѕ—
+// ***** windows APIг‚’дЅїз”Ё *****
 //
-// Ћё”sЋћ‚Н•Ф‚и’l=0
+// е¤±ж•—ж™‚гЃЇиї”г‚ЉеЂ¤=0
 //---------------------------------------------------------------------
 int MultLogo_GetModuleFileName(char *str, int maxlen){
+#ifdef _WIN32
 	return GetModuleFileName(NULL, str, maxlen);
+#else
+  ssize_t len = readlink("/proc/self/exe", str, maxlen - 1);
+  if (len != -1) str[len] = '\0';
+  return (len != -1);
+#endif
 }
 
 //---------------------------------------------------------------------
-// Љg’ЈЋq‘O‚Ь‚Е‚рЉ®‘S‚ЙЉЬ‚ЭЃAЉg’ЈЋq‚а“Ї‚¶ѓtѓ@ѓCѓ‹‚р“WЉJ
-// ***** windows API‚рЋg—p *****
+// ж‹Ўејµе­ђе‰ЌгЃѕгЃ§г‚’е®Ње…ЁгЃ«еђ«гЃїгЂЃж‹Ўејµе­ђг‚‚еђЊгЃгѓ•г‚Ўг‚¤гѓ«г‚’е±•й–‹
+// ***** windows APIг‚’дЅїз”Ё *****
 //
 // get filename (using WIN32API)
 // input:  filename_src      filename before adding wildcard
@@ -111,8 +135,13 @@ int MultLogo_GetModuleFileName(char *str, int maxlen){
 //---------------------------------------------------------------------
 int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 {
+#ifdef _WIN32
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFile;
+#else
+  glob_t globbuf;
+  struct stat st;
+#endif
 	char *strtmp;
 	char *strext;
 	char *newstr;      // for serach (add asterisk from filename_src)
@@ -159,6 +188,7 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 		}
 		else{
 			// check if folder name
+#ifdef _WIN32
 			hFile = FindFirstFile( newstr, &FindFileData );
 			if (hFile != INVALID_HANDLE_VALUE){
 				if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY){
@@ -167,8 +197,20 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 				}
 				FindClose(hFile);
 			}
+#else
+      int ret = glob(newstr, 0, NULL, &globbuf);
+      if (ret == 0){
+        memset(&st, 0, sizeof(st));
+        lstat(globbuf.gl_pathv[0], &st);
+        if (S_ISDIR(st.st_mode)){
+          strcat(newstr, DELIMITER_STRDIR);
+          strcat(newstr2, DELIMITER_STRDIR);
+        }
+      }
+      globfree(&globbuf);
+#endif
 			strcat(newstr, "*");
-			strcat(newstr, EXTNAME_LOGODATA);   // Љg’ЈЋq‚Є‚И‚ўЏкЌ‡‚М’З‰Б
+			strcat(newstr, EXTNAME_LOGODATA);   // ж‹Ўејµе­ђгЃЊгЃЄгЃ„е ґеђ€гЃ®иїЅеЉ 
 		}
 
 		// get folder (newstr2 is folder)
@@ -192,11 +234,20 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 	// get filename
 	if (errnum == 0){
 		n = 0;
+#ifdef _WIN32
 		hFile = FindFirstFile( newstr, &FindFileData );
 		if (hFile != INVALID_HANDLE_VALUE) {
+#else
+    int ret = glob(newstr, 0, NULL, &globbuf);
+    if (ret == 0){
+#endif
 			endf = 0;
 			while(n < FILELISTNUM_MAX && endf == 0){
+#ifdef _WIN32
 				nlen = strlen(FindFileData.cFileName);
+#else
+        nlen = strlen(globbuf.gl_pathv[n]);
+#endif
 				baselist[n] = (char *)malloc( (nlen + nlen2 + 1) * sizeof(char) );
 				if (baselist[n] == NULL){
 					fprintf(stderr, "error:failed in memory allocation.\n");
@@ -204,8 +255,12 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 					endf = 1;
 				}
 				else{
+#ifdef _WIN32
 					strcpy(baselist[n], newstr2);                  // folder
 					strcat(baselist[n], FindFileData.cFileName);   // name
+#else
+					strcpy(baselist[n], globbuf.gl_pathv[n]);   // name
+#endif
 					// sort
 					for(int i=0; i<n; i++){
 						if (strcmp(baselist[i], baselist[n]) > 0){
@@ -215,13 +270,21 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 						}
 					}
 					// get next filename
+#ifdef _WIN32
 					if ( !FindNextFile( hFile, &FindFileData ) ){
+#else
+          if ( n+1 == globbuf.gl_pathc ){
+#endif
 						endf = 1;
 					}
 					n ++;
 				}
 			}
+#ifdef _WIN32
 			FindClose(hFile);
+#else
+      globfree(&globbuf);
+#endif
 		}
 		if (n==0){
 			fprintf(stderr, "warning:no logo found(%s)\n", newstr);
@@ -235,12 +298,12 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 
 
 //---------------------------------------------------------------------
-// •¶Ћљ—с‚рѓЃѓ‚ѓЉЉm•Ы‚µ‚ДђЭ’и
-//  “ь—Н
-//   name_src   : ђЭ’и‚·‚йѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   name_dst   : ђЭ’иЊгѓ|ѓCѓ“ѓ^Ѓimalloc‚ЕѓЃѓ‚ѓЉЉm•ЫЌП‚ЭЃj
-//   •Ф‚и’l     : 0=ђіЏн, 2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// ж–‡е­—е€—г‚’гѓЎгѓўгѓЄзўєдїќгЃ—гЃ¦иЁ­е®љ
+//  е…ҐеЉ›
+//   name_src   : иЁ­е®љгЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   name_dst   : иЁ­е®љеѕЊгѓќг‚¤гѓіг‚їпј€mallocгЃ§гѓЎгѓўгѓЄзўєдїќжё€гЃїпј‰
+//   иї”г‚ЉеЂ¤     : 0=ж­Јеёё, 2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogo_FileStrGet(char** name_dst, const char* name_src)
 {
@@ -294,13 +357,13 @@ int MultLogo_FileStrGet(char** name_dst, const char* name_src)
 
 
 //---------------------------------------------------------------------
-// •¶Ћљ—с‚©‚зЌЂ–Ъ‚Ж’l‚рЋж“ѕ
-//  “ь—Н
-//   buf     : •¶Ћљ—с
-//   sizestr : ЌЂ–Ъ•¶Ћљ—сЌЕ‘е’·
-//  Џo—Н
-//   strw    : ЌЂ–Ъ•¶Ћљ—с
-//   •Ф‚и’l  : 0€ИЏг=’l‚Мbuf“а•¶Ћљ—с€К’u, -1=’l‚И‚µ
+// ж–‡е­—е€—гЃ‹г‚‰й …з›®гЃЁеЂ¤г‚’еЏ–еѕ—
+//  е…ҐеЉ›
+//   buf     : ж–‡е­—е€—
+//   sizestr : й …з›®ж–‡е­—е€—жњЂе¤§й•·
+//  е‡єеЉ›
+//   strw    : й …з›®ж–‡е­—е€—
+//   иї”г‚ЉеЂ¤  : 0д»ҐдёЉ=еЂ¤гЃ®bufе†…ж–‡е­—е€—дЅЌзЅ®, -1=еЂ¤гЃЄгЃ—
 //---------------------------------------------------------------------
 int MultLogo_StrArgGet(char *strw, const char* buf, int sizestr){
 	int pos, wlen, type;
@@ -338,12 +401,12 @@ int MultLogo_StrArgGet(char *strw, const char* buf, int sizestr){
 }
 
 
-//##### ѓIѓvѓVѓ‡ѓ“ЉЦAЏ€—ќ
+//##### г‚Єгѓ—г‚·гѓ§гѓій–ўйЂЈе‡¦зђ†
 
 //---------------------------------------------------------------------
-// и‡’lѓpѓ‰ѓЃЃ[ѓ^‚МЏ‰Љъ‰»
-//  “ьЏo—Н
-//   p : ‰јђЭ’и—М€ж‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^
+// й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їгЃ®е€ќжњџеЊ–
+//  е…Ґе‡єеЉ›
+//   p : д»®иЁ­е®љй еџџгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚ї
 //---------------------------------------------------------------------
 void MultLogo_ParamClear(MLOGO_THRESREC *p){
 	MLOGO_UPTHRESREC*  pup;
@@ -353,14 +416,14 @@ void MultLogo_ParamClear(MLOGO_THRESREC *p){
 }
 
 //---------------------------------------------------------------------
-// и‡’lѓpѓ‰ѓЃЃ[ѓ^‚р‰јђЭ’и
-//  “ьЏo—Н
-//   p      : ‰јђЭ’и—М€ж‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^
-//  “ь—Н
-//   name   : и‡’lѓpѓ‰ѓЃЃ[ѓ^–ј‘O
-//   value  : и‡’lѓpѓ‰ѓЃЃ[ѓ^’l
-//  Џo—Н
-//   •Ф‚и’l : 0=ђЭ’и, 1=ѓpѓ‰ѓЃЃ[ѓ^”сЊџЏo
+// й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їг‚’д»®иЁ­е®љ
+//  е…Ґе‡єеЉ›
+//   p      : д»®иЁ­е®љй еџџгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚ї
+//  е…ҐеЉ›
+//   name   : й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їеђЌе‰Ќ
+//   value  : й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їеЂ¤
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=иЁ­е®љ, 1=гѓ‘гѓ©гѓЎгѓјг‚їйќћж¤ње‡є
 //---------------------------------------------------------------------
 int MultLogo_ParamPreSet(MLOGO_THRESREC *p, const char *name, const char *value){
     int n;
@@ -441,11 +504,11 @@ int MultLogo_ParamPreSet(MLOGO_THRESREC *p, const char *name, const char *value)
 
 
 //---------------------------------------------------------------------
-// и‡’lѓpѓ‰ѓЃЃ[ѓ^‚рђЭ’иЃi‰јђЭ’и—М€ж“а—e‚рЉeѓЌѓSѓfЃ[ѓ^‚ЙѓRѓsЃ[Ѓj
-//  “ь—Н
-//   p      : ‰јђЭ’и—М€ж‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^
-//  Џo—Н
-//   plogot : ЉeѓЌѓSѓfЃ[ѓ^‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^
+// й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їг‚’иЁ­е®љпј€д»®иЁ­е®љй еџџе†…е®№г‚’еђ„гѓ­г‚ґгѓ‡гѓјг‚їгЃ«г‚ігѓ”гѓјпј‰
+//  е…ҐеЉ›
+//   p      : д»®иЁ­е®љй еџџгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚ї
+//  е‡єеЉ›
+//   plogot : еђ„гѓ­г‚ґгѓ‡гѓјг‚їгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚ї
 //---------------------------------------------------------------------
 void MultLogo_ParamCopy(LOGO_THRESREC *plogot, MLOGO_THRESREC *p){
 	MLOGO_UPTHRESREC*  pup;
@@ -508,13 +571,13 @@ void MultLogo_ParamCopy(LOGO_THRESREC *plogot, MLOGO_THRESREC *p){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFѓIѓvѓVѓ‡ѓ“ђЭ’и
-// ѓIѓvѓVѓ‡ѓ“‚р“З‚ЭЌћ‚Ю
-//  “ь—Н
-//   strcmd : ѓIѓvѓVѓ‡ѓ“–ј‘O•¶Ћљ—с
-//   strval : ѓpѓ‰ѓЃЃ[ѓ^’l•¶Ћљ—с
-//  Џo—Н
-//   •Ф‚и’l : Ћg—p€шђ”Ѓi0=ѓpѓ‰ѓЃЃ[ѓ^ЊџЏo‚№‚ё, -1=ѓGѓ‰Ѓ[Ѓj
+// Publicй–ўж•°пјљг‚Єгѓ—г‚·гѓ§гѓіиЁ­е®љ
+// г‚Єгѓ—г‚·гѓ§гѓіг‚’иЄ­гЃїиѕјг‚Ђ
+//  е…ҐеЉ›
+//   strcmd : г‚Єгѓ—г‚·гѓ§гѓіеђЌе‰Ќж–‡е­—е€—
+//   strval : гѓ‘гѓ©гѓЎгѓјг‚їеЂ¤ж–‡е­—е€—
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : дЅїз”Ёеј•ж•°пј€0=гѓ‘гѓ©гѓЎгѓјг‚їж¤ње‡єгЃ›гЃљ, -1=г‚Ёгѓ©гѓјпј‰
 //=====================================================================
 int MultLogoOptionAdd(MLOGO_DATASET* pml, const char* strcmd, const char* strval){
 	int nlist;
@@ -644,12 +707,12 @@ int MultLogoOptionAdd(MLOGO_DATASET* pml, const char* strcmd, const char* strval
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFѓtѓ@ѓCѓ‹‚©‚з‚МѓIѓvѓVѓ‡ѓ“ђЭ’и
-// ѓtѓ@ѓCѓ‹‚Й‹LЌЪ‚і‚к‚Д‚ў‚йѓIѓvѓVѓ‡ѓ“‚р“З‚ЭЌћ‚Ю
-//  “ь—Н
-//   fname     : ѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   •Ф‚и’l : ђЭ’и‚µ‚ЅѓIѓvѓVѓ‡ѓ“ЌЂ–Ъђ”Ѓi0=ђЭ’и‚И‚µ, -1=ѓGѓ‰Ѓ[Ѓj
+// Publicй–ўж•°пјљгѓ•г‚Ўг‚¤гѓ«гЃ‹г‚‰гЃ®г‚Єгѓ—г‚·гѓ§гѓіиЁ­е®љ
+// гѓ•г‚Ўг‚¤гѓ«гЃ«иЁиј‰гЃ•г‚ЊгЃ¦гЃ„г‚‹г‚Єгѓ—г‚·гѓ§гѓіг‚’иЄ­гЃїиѕјг‚Ђ
+//  е…ҐеЉ›
+//   fname     : гѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : иЁ­е®љгЃ—гЃџг‚Єгѓ—г‚·гѓ§гѓій …з›®ж•°пј€0=иЁ­е®љгЃЄгЃ—, -1=г‚Ёгѓ©гѓјпј‰
 //=====================================================================
 int MultLogoOptionFile(MLOGO_DATASET* pml, const char* fname){
 	FILE* fpr;
@@ -699,10 +762,10 @@ int MultLogoOptionFile(MLOGO_DATASET* pml, const char* fname){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFЏ‰Љъ“З‚ЭЌћ‚Эѓtѓ@ѓCѓ‹‚©‚з‚МѓIѓvѓVѓ‡ѓ“ђЭ’и
-// ѓtѓ@ѓCѓ‹‚Й‹LЌЪ‚і‚к‚Д‚ў‚йѓIѓvѓVѓ‡ѓ“‚р“З‚ЭЌћ‚Ю
-//  Џo—Н
-//   •Ф‚и’l : ђЭ’и‚µ‚ЅѓIѓvѓVѓ‡ѓ“ЌЂ–Ъђ”Ѓi0=ђЭ’и‚И‚µ, -1=ѓGѓ‰Ѓ[Ѓj
+// Publicй–ўж•°пјље€ќжњџиЄ­гЃїиѕјгЃїгѓ•г‚Ўг‚¤гѓ«гЃ‹г‚‰гЃ®г‚Єгѓ—г‚·гѓ§гѓіиЁ­е®љ
+// гѓ•г‚Ўг‚¤гѓ«гЃ«иЁиј‰гЃ•г‚ЊгЃ¦гЃ„г‚‹г‚Єгѓ—г‚·гѓ§гѓіг‚’иЄ­гЃїиѕјг‚Ђ
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : иЁ­е®љгЃ—гЃџг‚Єгѓ—г‚·гѓ§гѓій …з›®ж•°пј€0=иЁ­е®љгЃЄгЃ—, -1=г‚Ёгѓ©гѓјпј‰
 //=====================================================================
 int MultLogoOptionOrgFile(MLOGO_DATASET* pml){
 	char buf[FILE_BUFSIZE];
@@ -738,11 +801,11 @@ int MultLogoOptionOrgFile(MLOGO_DATASET* pml){
 
 
 
-//##### Џ‰Љъ‰»ЃEЏI—№Џ€—ќ
+//##### е€ќжњџеЊ–гѓ»зµ‚дє†е‡¦зђ†
 
 //=====================================================================
-// PublicЉЦђ”ЃF‹N“®Ћћ‚Й‚P‰с‚ѕ‚ЇЊД‚СЏo‚·
-// •Пђ”Џ‰Љъ‰»Џ€—ќ
+// Publicй–ўж•°пјљиµ·е‹•ж™‚гЃ«пј‘е›ћгЃ гЃ‘е‘јгЃіе‡єгЃ™
+// е¤‰ж•°е€ќжњџеЊ–е‡¦зђ†
 //=====================================================================
 void MultLogoInit(MLOGO_DATASET* pml){
 	int i;
@@ -782,20 +845,20 @@ void MultLogoInit(MLOGO_DATASET* pml){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFЏI—№Ћћ‚Й‚P‰с‚ѕ‚ЇЊД‚СЏo‚·
-// —М€жЉm•ЫѓЃѓ‚ѓЉ‚М‰р•ъЏ€—ќ
+// Publicй–ўж•°пјљзµ‚дє†ж™‚гЃ«пј‘е›ћгЃ гЃ‘е‘јгЃіе‡єгЃ™
+// й еџџзўєдїќгѓЎгѓўгѓЄгЃ®и§Јж”ѕе‡¦зђ†
 //=====================================================================
 void MultLogoFree(MLOGO_DATASET* pml){
 	int i;
 
-	// ѓfѓoѓbѓO—pѓtѓ@ѓCѓ‹‚Н’КЏнѓNѓЌЃ[ѓYЌП‚Э‚Е‚ ‚й‚Є€ЩЏнЏI—№Ћћ‚ЙЋg—p
+	// гѓ‡гѓђгѓѓг‚°з”Ёгѓ•г‚Ўг‚¤гѓ«гЃЇйЂљеёёг‚Їгѓ­гѓјг‚єжё€гЃїгЃ§гЃ‚г‚‹гЃЊз•°еёёзµ‚дє†ж™‚гЃ«дЅїз”Ё
 	for(i = 0; i < LOGONUM_MAX; i++){
 		if (pml->fpo_ana2[i])
 	        fclose(pml->fpo_ana2[i]);
 	        pml->fpo_ana2[i] = NULL;
 	}
 
-	// ѓЌѓSЉЦA‚МѓЃѓ‚ѓЉ‰р•ъ
+	// гѓ­г‚ґй–ўйЂЈгЃ®гѓЎгѓўгѓЄи§Јж”ѕ
 	for(i = 0; i < LOGONUM_MAX; i++){
 		if (pml->all_logodata[i] != NULL){
 		    LogoFree( pml->all_logodata[i] );
@@ -803,7 +866,7 @@ void MultLogoFree(MLOGO_DATASET* pml){
 		    pml->all_logodata[i] = NULL;
 		}
 	}
-	// ђЭ’иѓtѓ@ѓCѓ‹–ј‚МѓЃѓ‚ѓЉ‰р•ъ
+	// иЁ­е®љгѓ•г‚Ўг‚¤гѓ«еђЌгЃ®гѓЎгѓўгѓЄи§Јж”ѕ
 	if (pml->opt_logofilename != NULL){
 		free( pml->opt_logofilename );
 		pml->opt_logofilename = NULL;
@@ -834,15 +897,15 @@ void MultLogoFree(MLOGO_DATASET* pml){
 
 
 
-//##### ЊџЏoЉJЋn‘O‚МђЭ’иЏ€—ќ
+//##### ж¤ње‡єй–‹е§‹е‰ЌгЃ®иЁ­е®ље‡¦зђ†
 
 //---------------------------------------------------------------------
-// Љg’ЈЋq‘O‚Ь‚Е‚рЉ®‘S‚ЙЉЬ‚ЭЉg’ЈЋq‚а“Ї‚¶ѓtѓ@ѓCѓ‹‚р“WЉJ‚µЃAѓЌѓS“o^‚·‚й
-//  “ь—Н
-//   pml->opt_logofilename  : "-logo"ѓIѓvѓVѓ‡ѓ“ѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   pml->all_logofilename  : ЉeѓЌѓSѓtѓ@ѓCѓ‹–јЃimalloc‚Й‚ж‚и—М€жЉm•ЫЃj
-//   •Ф‚и’l                 : 0=ђіЏн, 2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// ж‹Ўејµе­ђе‰ЌгЃѕгЃ§г‚’е®Ње…ЁгЃ«еђ«гЃїж‹Ўејµе­ђг‚‚еђЊгЃгѓ•г‚Ўг‚¤гѓ«г‚’е±•й–‹гЃ—гЂЃгѓ­г‚ґз™»йЊІгЃ™г‚‹
+//  е…ҐеЉ›
+//   pml->opt_logofilename  : "-logo"г‚Єгѓ—г‚·гѓ§гѓігѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   pml->all_logofilename  : еђ„гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«еђЌпј€mallocгЃ«г‚€г‚Љй еџџзўєдїќпј‰
+//   иї”г‚ЉеЂ¤                 : 0=ж­Јеёё, 2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_ExpandFilename(MLOGO_DATASET* pml){
 	int i, idst, ibase, fin_flag;
@@ -893,7 +956,7 @@ int MultLogoSetup_ExpandFilename(MLOGO_DATASET* pml){
 				ibase ++;
 			}
 		}
-		// ѓtѓ@ѓCѓ‹–ј“WЉJ—p‚Й•ЫЋќ‚µ‚ЅѓЃѓ‚ѓЉ‰р•ъ
+		// гѓ•г‚Ўг‚¤гѓ«еђЌе±•й–‹з”ЁгЃ«дїќжЊЃгЃ—гЃџгѓЎгѓўгѓЄи§Јж”ѕ
 		for(i = 0; i < FILELISTNUM_MAX; i++){
 			if (baselist_filename[i] != NULL){
 				free( baselist_filename[i] );
@@ -905,10 +968,10 @@ int MultLogoSetup_ExpandFilename(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// ЉeѓЌѓSѓtѓ@ѓCѓ‹‚рЏ‰Љъ‰»
-// ѓЌѓSѓtѓ@ѓCѓ‹–ј‚Є’и‹`‚і‚к‚Д‚ў‚йѓЌѓS‚М‚Э—М€ж‚рЉm•Ы‚·‚й
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн 2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// еђ„гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«г‚’е€ќжњџеЊ–
+// гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«еђЌгЃЊе®љзѕ©гЃ•г‚ЊгЃ¦гЃ„г‚‹гѓ­г‚ґгЃ®гЃїй еџџг‚’зўєдїќгЃ™г‚‹
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё 2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_EachInit(MLOGO_DATASET* pml){
 	int i;
@@ -933,12 +996,12 @@ int MultLogoSetup_EachInit(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// ѓtѓ@ѓCѓ‹‚©‚зи‡’lѓpѓ‰ѓЃЃ[ѓ^‚р“З‚ЭЌћ‚Ю
-//  “ь—Н
-//   fname : ѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   pmt    : Ћж“ѕ—p‰ј—М€ж‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^
-//   •Ф‚и’l : 0=ђіЏн
+// гѓ•г‚Ўг‚¤гѓ«гЃ‹г‚‰й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їг‚’иЄ­гЃїиѕјг‚Ђ
+//  е…ҐеЉ›
+//   fname : гѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   pmt    : еЏ–еѕ—з”Ёд»®й еџџгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚ї
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё
 //---------------------------------------------------------------------
 int MultLogoSetup_ParamRead_File(MLOGO_THRESREC *pmt, const char* fname, int dispoff){
 	FILE* fpr;
@@ -976,9 +1039,9 @@ int MultLogoSetup_ParamRead_File(MLOGO_THRESREC *pmt, const char* fname, int dis
 }
 
 //---------------------------------------------------------------------
-// ЉeѓЌѓS‚Ми‡’lѓpѓ‰ѓЃЃ[ѓ^‚рђЭ’и
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// еђ„гѓ­г‚ґгЃ®й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їг‚’иЁ­е®љ
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_ParamRead(MLOGO_DATASET* pml){
 	MLOGO_THRESREC thres_file;
@@ -1043,11 +1106,11 @@ int MultLogoSetup_ParamRead(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// ЉeѓЌѓSѓfЃ[ѓ^‚МѓtѓЊЃ[ѓЂђ”‚Й‘О‰ћ‚µ‚Ѕ—М€ж‚рЏ‰Љъ‰»
-//  “ь—Н
-//   num_frames : “З‚ЭЌћ‚Ю‰ж‘њѓfЃ[ѓ^‚МѓtѓЊЃ[ѓЂђ”
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// еђ„гѓ­г‚ґгѓ‡гѓјг‚їгЃ®гѓ•гѓ¬гѓјгѓ ж•°гЃ«еЇѕеїњгЃ—гЃџй еџџг‚’е€ќжњџеЊ–
+//  е…ҐеЉ›
+//   num_frames : иЄ­гЃїиѕјг‚Ђз”»еѓЏгѓ‡гѓјг‚їгЃ®гѓ•гѓ¬гѓјгѓ ж•°
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_FrameInit(MLOGO_DATASET* pml, int num_frames){
 	LOGO_DATASET* plogo;
@@ -1068,12 +1131,12 @@ int MultLogoSetup_FrameInit(MLOGO_DATASET* pml, int num_frames){
 
 
 //---------------------------------------------------------------------
-// ЉeѓЌѓSѓfЃ[ѓ^“З‚ЭЌћ‚Э
-//  “ь—Н
-//   pml->all_logofilename : ЉeѓЌѓSѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   pml->all_logodata     : ЉeѓЌѓSѓfЃ[ѓ^
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// еђ„гѓ­г‚ґгѓ‡гѓјг‚їиЄ­гЃїиѕјгЃї
+//  е…ҐеЉ›
+//   pml->all_logofilename : еђ„гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   pml->all_logodata     : еђ„гѓ­г‚ґгѓ‡гѓјг‚ї
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_LogoRead(MLOGO_DATASET* pml){
 	const char*   logofilename;
@@ -1097,11 +1160,11 @@ int MultLogoSetup_LogoRead(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// "-oa2"ѓIѓvѓVѓ‡ѓ“‚ЕЋw’и‚·‚йѓfѓoѓbѓO—p–€ѓtѓЊЃ[ѓЂЏо•сѓtѓ@ѓCѓ‹ѓIЃ[ѓvѓ“
-//  “ь—Н
-//   pml->opt_ana2file : ѓtѓ@ѓCѓ‹–ј
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// "-oa2"г‚Єгѓ—г‚·гѓ§гѓігЃ§жЊ‡е®љгЃ™г‚‹гѓ‡гѓђгѓѓг‚°з”ЁжЇЋгѓ•гѓ¬гѓјгѓ жѓ…е ±гѓ•г‚Ўг‚¤гѓ«г‚Єгѓјгѓ—гѓі
+//  е…ҐеЉ›
+//   pml->opt_ana2file : гѓ•г‚Ўг‚¤гѓ«еђЌ
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1114,7 +1177,7 @@ int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 
 	ret = 0;
 	if (pml->opt_ana2file != NULL){
-		ana2file = pml->opt_ana2file;		// newstr : •¶Ћљ—сЉm•Ы"_100"
+		ana2file = pml->opt_ana2file;		// newstr : ж–‡е­—е€—зўєдїќ"_100"
 		newstr  = (char *)malloc( (strlen(ana2file) + 4 + 1) * sizeof(char) );
 		newstr1 = (char *)malloc( (strlen(ana2file)     + 1) * sizeof(char) );
 		newstr2 = (char *)malloc( (strlen(ana2file)     + 1) * sizeof(char) );
@@ -1126,8 +1189,8 @@ int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 			strcpy(newstr1, ana2file);
 			tmpstr = strrchr(newstr1, '.');
 			if (tmpstr != NULL){
-				strcpy(newstr2, tmpstr);		// newstr2 : Љg’ЈЋq•”•Є
-				strcpy(tmpstr, "");				// newstr1 : Љg’ЈЋq‚рЏњ‚ў‚Ѕ•”•Є
+				strcpy(newstr2, tmpstr);		// newstr2 : ж‹Ўејµе­ђйѓЁе€†
+				strcpy(tmpstr, "");				// newstr1 : ж‹Ўејµе­ђг‚’й™¤гЃ„гЃџйѓЁе€†
 			}
 			else{
 				strcpy(newstr2, "");
@@ -1135,10 +1198,10 @@ int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 			for(i = 0; i < LOGONUM_MAX; i++){
 				plogo      = pml->all_logodata[i];
 				if (plogo != NULL){
-					if (pml->num_deflogo == 1){		// ѓЌѓS‚Є‚P‚В‚ѕ‚Ї‚И‚зЏ]—€’К‚и
+					if (pml->num_deflogo == 1){		// гѓ­г‚ґгЃЊпј‘гЃ¤гЃ гЃ‘гЃЄг‚‰еѕ“жќҐйЂљг‚Љ
 						strcpy(newstr, ana2file);
 					}
-					else{						// ѓЌѓS‚Є‚Q‚В€ИЏг‚И‚з–ј‘O‚Й”ФЌ†‚р’З‰Б
+					else{						// гѓ­г‚ґгЃЊпј’гЃ¤д»ҐдёЉгЃЄг‚‰еђЌе‰ЌгЃ«з•ЄеЏ·г‚’иїЅеЉ 
 						sprintf(newstr, "%s_%d%s", newstr1, i+1, newstr2);
 					}
 					pml->fpo_ana2[i] = fopen(newstr, "w");
@@ -1159,36 +1222,36 @@ int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFЉJЋn‘O‚МђЭ’иЏ‰Љъ‰»
-// ђЭ’иЏ‰Љъ‰»‚рЌs‚¤
-//  “ь—Н
-//   num_frames : “З‚ЭЌћ‚Ю‰ж‘њѓfЃ[ѓ^‚МѓtѓЊЃ[ѓЂђ”
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓGѓ‰Ѓ[  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[  3=ѓЌѓSѓfЃ[ѓ^‚И‚µ
+// Publicй–ўж•°пјљй–‹е§‹е‰ЌгЃ®иЁ­е®ље€ќжњџеЊ–
+// иЁ­е®ље€ќжњџеЊ–г‚’иЎЊгЃ†
+//  е…ҐеЉ›
+//   num_frames : иЄ­гЃїиѕјг‚Ђз”»еѓЏгѓ‡гѓјг‚їгЃ®гѓ•гѓ¬гѓјгѓ ж•°
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=г‚Ёгѓ©гѓј  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј  3=гѓ­г‚ґгѓ‡гѓјг‚їгЃЄгЃ—
 //=====================================================================
 int MultLogoSetup(MLOGO_DATASET* pml, int num_frames){
 	int ret;
 
 	pml->image_frames = num_frames;
 
-	ret = MultLogoSetup_ExpandFilename(pml);	// ѓЌѓSѓtѓ@ѓCѓ‹–ј‚р“WЉJ
-	if (ret == 0){					// Ћg—p‚·‚йЉeѓЌѓSѓtѓ@ѓCѓ‹—М€ж‚рЏ‰Љъ‰»
+	ret = MultLogoSetup_ExpandFilename(pml);	// гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«еђЌг‚’е±•й–‹
+	if (ret == 0){					// дЅїз”ЁгЃ™г‚‹еђ„гѓ­г‚ґгѓ•г‚Ўг‚¤гѓ«й еџџг‚’е€ќжњџеЊ–
 		ret = MultLogoSetup_EachInit(pml);
-		if (pml->num_deflogo == 0){				// ѓЌѓS’и‹`‚И‚µ
+		if (pml->num_deflogo == 0){				// гѓ­г‚ґе®љзѕ©гЃЄгЃ—
 			fprintf(stderr, "warning:no logo definition found.\n");
 			ret = 3;
 		}
 	}
-	if (ret == 0){					// и‡’lѓpѓ‰ѓЃЃ[ѓ^“З‚ЭЌћ‚Э
+	if (ret == 0){					// й–ѕеЂ¤гѓ‘гѓ©гѓЎгѓјг‚їиЄ­гЃїиѕјгЃї
 		ret = MultLogoSetup_ParamRead(pml);
 	}
-	if (ret == 0){					// ѓЌѓSѓfЃ[ѓ^“З‚ЭЌћ‚Э
+	if (ret == 0){					// гѓ­г‚ґгѓ‡гѓјг‚їиЄ­гЃїиѕјгЃї
 		ret = MultLogoSetup_LogoRead(pml);
 	}
-	if (ret == 0){					// ѓtѓЊЃ[ѓЂђ”‚Й‘О‰ћ‚µ‚Ѕ—М€жЉm•ЫЃEЏ‰Љъ‰»
+	if (ret == 0){					// гѓ•гѓ¬гѓјгѓ ж•°гЃ«еЇѕеїњгЃ—гЃџй еџџзўєдїќгѓ»е€ќжњџеЊ–
 		ret = MultLogoSetup_FrameInit(pml, num_frames);
 	}
-	if (ret == 0){					// "-oa2"ѓfѓoѓbѓO—p–€ѓtѓЊЃ[ѓЂЏо•сѓIЃ[ѓvѓ“
+	if (ret == 0){					// "-oa2"гѓ‡гѓђгѓѓг‚°з”ЁжЇЋгѓ•гѓ¬гѓјгѓ жѓ…е ±г‚Єгѓјгѓ—гѓі
 		ret = MultLogoSetup_FileAna2Open(pml);
 	}
 	return ret;
@@ -1197,7 +1260,7 @@ int MultLogoSetup(MLOGO_DATASET* pml, int num_frames){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFѓЌѓSѓpѓ‰ѓЃЃ[ѓ^Џо•с‚р•\Ћ¦
+// Publicй–ўж•°пјљгѓ­г‚ґгѓ‘гѓ©гѓЎгѓјг‚їжѓ…е ±г‚’иЎЁз¤є
 //=====================================================================
 void MultLogoDisplayParam(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1255,15 +1318,15 @@ void MultLogoDisplayParam(MLOGO_DATASET* pml){
 
 
 
-//##### ‚PѓtѓЊЃ[ѓЂ–€‚МЋАЌsЏ€—ќ
+//##### пј‘гѓ•гѓ¬гѓјгѓ жЇЋгЃ®е®џиЎЊе‡¦зђ†
 
 //=====================================================================
-// PublicЉЦђ”ЃF‰ж‘њ‚P–‡‚Й‘О‚·‚йѓЌѓSЊџЏo‚рЌs‚¤
-// ‚P–‡‚М‰ж‘њѓfЃ[ѓ^‚МѓЌѓS—L–і‚рЋж“ѕ
-//   data      : ‰ж‘њѓfЃ[ѓ^‹P“x’l‚Ц‚Мѓ|ѓCѓ“ѓ^
-//   pitch     : ‰ж‘њѓfЃ[ѓ^‚М‚PЌsѓfЃ[ѓ^ђ”
-//   nframe    : ѓtѓЊЃ[ѓЂ”ФЌ†
-//   height    : ‰ж‘њѓfЃ[ѓ^‚МЌ‚‚іЃiѓЌѓSѓfЃ[ѓ^‚Є‰ж‘њ“а‚©”»’f‚М‚Э‚ЙЋg—pЃj
+// Publicй–ўж•°пјљз”»еѓЏпј‘жћљгЃ«еЇѕгЃ™г‚‹гѓ­г‚ґж¤ње‡єг‚’иЎЊгЃ†
+// пј‘жћљгЃ®з”»еѓЏгѓ‡гѓјг‚їгЃ®гѓ­г‚ґжњ‰з„Ўг‚’еЏ–еѕ—
+//   data      : з”»еѓЏгѓ‡гѓјг‚їијќеє¦еЂ¤гЃёгЃ®гѓќг‚¤гѓіг‚ї
+//   pitch     : з”»еѓЏгѓ‡гѓјг‚їгЃ®пј‘иЎЊгѓ‡гѓјг‚їж•°
+//   nframe    : гѓ•гѓ¬гѓјгѓ з•ЄеЏ·
+//   height    : з”»еѓЏгѓ‡гѓјг‚їгЃ®й«гЃ•пј€гѓ­г‚ґгѓ‡гѓјг‚їгЃЊз”»еѓЏе†…гЃ‹е€¤ж–­гЃ®гЃїгЃ«дЅїз”Ёпј‰
 //=====================================================================
 void MultLogoCalc(MLOGO_DATASET* pml, const BYTE *data, int pitch, int nframe, int height){
 	LOGO_DATASET* plogo;
@@ -1272,7 +1335,7 @@ void MultLogoCalc(MLOGO_DATASET* pml, const BYTE *data, int pitch, int nframe, i
 	for(i = 0; i < LOGONUM_MAX; i++){
 		plogo      = pml->all_logodata[i];
 		if (plogo != NULL){
-			// ‰ж‘њЉOѓЃѓ‚ѓЉѓAѓNѓZѓX‚Е—Ћ‚ї‚й‚±‚Ж‚р–h‚®‚Ѕ‚Я‚Й’З‰Б
+			// з”»еѓЏе¤–гѓЎгѓўгѓЄг‚ўг‚Їг‚»г‚№гЃ§иђЅгЃЎг‚‹гЃ“гЃЁг‚’йІгЃђгЃџг‚ЃгЃ«иїЅеЉ 
 			if ((plogo->paramdat.yx + plogo->paramdat.yw <= pitch+8 &&
 				 plogo->paramdat.yy + plogo->paramdat.yh <  height-1) ||
 			    (plogo->paramdat.yx + plogo->paramdat.yw <  pitch   &&
@@ -1288,10 +1351,10 @@ void MultLogoCalc(MLOGO_DATASET* pml, const BYTE *data, int pitch, int nframe, i
 
 
 
-//##### ‘SѓtѓЊЃ[ѓЂ“З‚ЭЌћ‚ЭЊг‚МЊџЏoЏ€—ќ
+//##### е…Ёгѓ•гѓ¬гѓјгѓ иЄ­гЃїиѕјгЃїеѕЊгЃ®ж¤ње‡єе‡¦зђ†
 
 //---------------------------------------------------------------------
-// "-oa2"ѓIѓvѓVѓ‡ѓ“‚ЕЋw’и‚·‚йѓfѓoѓbѓO—p–€ѓtѓЊЃ[ѓЂЏо•сѓtѓ@ѓCѓ‹ѓNѓЌЃ[ѓY
+// "-oa2"г‚Єгѓ—г‚·гѓ§гѓігЃ§жЊ‡е®љгЃ™г‚‹гѓ‡гѓђгѓѓг‚°з”ЁжЇЋгѓ•гѓ¬гѓјгѓ жѓ…е ±гѓ•г‚Ўг‚¤гѓ«г‚Їгѓ­гѓјг‚є
 //---------------------------------------------------------------------
 void MultLogoFind_FileAna2Close(MLOGO_DATASET* pml){
 	int i;
@@ -1304,12 +1367,12 @@ void MultLogoFind_FileAna2Close(MLOGO_DATASET* pml){
 }
 
 //---------------------------------------------------------------------
-// ѓЌѓSЊ‹‰К‘S‘М‚©‚з‚М”»•КЏ€—ќ
-// ѓЌѓSЊ‹‰К‚©‚з•s—v‚Ж‚·‚йѓЌѓS‚р”»•К‚µ‚Д–іЊш‰»ЃA•K—v‚ИѓЌѓS‚НЉъЉФ‚рЌ‡ЋZ
-//  Џo—Н
-//    pml->logoresult    : ЊџЏoѓЌѓS‚Ь‚Ж‚Я•\Ћ¦ЉъЉФ
-//    pml->priority_list : ЊџЏoѓtѓЊЃ[ѓЂ‚Є‘Ѕ‚ўЏ‡‚МѓЉѓXѓg
-//  Ѓipml->total_valid[ѓЌѓS”ФЌ†-1] = 0 ђЭ’и‚Й‚ж‚й•s—vѓЌѓS–іЊш‰»Ѓj
+// гѓ­г‚ґзµђжћње…ЁдЅ“гЃ‹г‚‰гЃ®е€¤е€Ґе‡¦зђ†
+// гѓ­г‚ґзµђжћњгЃ‹г‚‰дёЌи¦ЃгЃЁгЃ™г‚‹гѓ­г‚ґг‚’е€¤е€ҐгЃ—гЃ¦з„ЎеЉ№еЊ–гЂЃеї…и¦ЃгЃЄгѓ­г‚ґгЃЇжњџй–“г‚’еђ€з®—
+//  е‡єеЉ›
+//    pml->logoresult    : ж¤ње‡єгѓ­г‚ґгЃѕгЃЁг‚ЃиЎЁз¤єжњџй–“
+//    pml->priority_list : ж¤ње‡єгѓ•гѓ¬гѓјгѓ гЃЊе¤љгЃ„й †гЃ®гѓЄг‚№гѓ€
+//  пј€pml->total_valid[гѓ­г‚ґз•ЄеЏ·-1] = 0 иЁ­е®љгЃ«г‚€г‚‹дёЌи¦Ѓгѓ­г‚ґз„ЎеЉ№еЊ–пј‰
 //---------------------------------------------------------------------
 void MultLogoFind_TotalResult(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1317,9 +1380,9 @@ void MultLogoFind_TotalResult(MLOGO_DATASET* pml){
 	int oanum, autosel;
 	int n_detect, n_others, n_disable;
 	short isel, jsel;
-	short prior_detect[LOGONUM_MAX];			// CMЊџЏo—LЊшѓЌѓS—DђжЏ‡€К
-	short prior_others[LOGONUM_MAX];			// CMЊџЏoЉOѓЌѓS—DђжЏ‡€К
-	short prior_disable[LOGONUM_MAX];			// –іЊш”»’fѓЌѓS—DђжЏ‡€К
+	short prior_detect[LOGONUM_MAX];			// CMж¤ње‡єжњ‰еЉ№гѓ­г‚ґе„Єе…€й †дЅЌ
+	short prior_others[LOGONUM_MAX];			// CMж¤ње‡єе¤–гѓ­г‚ґе„Єе…€й †дЅЌ
+	short prior_disable[LOGONUM_MAX];			// з„ЎеЉ№е€¤ж–­гѓ­г‚ґе„Єе…€й †дЅЌ
 
 	oanum = pml->oanum;
 	// sort logo priority
@@ -1353,13 +1416,13 @@ void MultLogoFind_TotalResult(MLOGO_DATASET* pml){
 			if (pml->total_valid[isel] == 0){
 			}
 			else if (isel < oanum){             // within -oanum option logo
-				if (i == 0 || pml->oasel != 1){ // —DђжЏ‡€К‚Є€к”ФЌ‚‚ў‚©‘S•”’ІЌёЋћ
+				if (i == 0 || pml->oasel != 1){ // е„Єе…€й †дЅЌгЃЊдёЂз•Єй«гЃ„гЃ‹е…ЁйѓЁиЄїжџ»ж™‚
 					ins = LogoResultAdd( &(pml->logoresult), plogo, autosel );
-					if (ins == 0){                  // ѓЌѓS’З‰Б‚рЌs‚н‚И‚ўЏкЌ‡
+					if (ins == 0){                  // гѓ­г‚ґиїЅеЉ г‚’иЎЊг‚ЏгЃЄгЃ„е ґеђ€
 						pml->total_valid[isel] = 0; // invalidate logo
 					}
 				}
-				else{                               // ѓЌѓS’З‰Б‚рЌs‚н‚И‚ўЏкЌ‡
+				else{                               // гѓ­г‚ґиїЅеЉ г‚’иЎЊг‚ЏгЃЄгЃ„е ґеђ€
 					pml->total_valid[isel] = 0;     // invalidate logo
 				}
 			}
@@ -1373,17 +1436,17 @@ void MultLogoFind_TotalResult(MLOGO_DATASET* pml){
 		isel = pml->priority_list[i];
 		if (pml->total_frame[isel] > 0){
 			if (pml->total_valid[isel] == 0){
-				prior_disable[n_disable++] = isel;	// –іЊш”»’fѓЌѓS
+				prior_disable[n_disable++] = isel;	// з„ЎеЉ№е€¤ж–­гѓ­г‚ґ
 			}
 			else if (isel >= oanum){
-				prior_others[n_others++] = isel;	// CMЊџЏoЉOѓЌѓS
+				prior_others[n_others++] = isel;	// CMж¤ње‡єе¤–гѓ­г‚ґ
 			}
 			else{
-				prior_detect[n_detect++] = isel;	// CMЊџЏo—LЊшѓЌѓS
+				prior_detect[n_detect++] = isel;	// CMж¤ње‡єжњ‰еЉ№гѓ­г‚ґ
 			}
 		}
 	}
-	// CMЊџЏo—LЊшѓЌѓS - CMЊџЏoЉOѓЌѓS - –іЊш”»’fѓЌѓS ‚МЏ‡‚Й•А‚С‘Ц‚¦
+	// CMж¤ње‡єжњ‰еЉ№гѓ­г‚ґ - CMж¤ње‡єе¤–гѓ­г‚ґ - з„ЎеЉ№е€¤ж–­гѓ­г‚ґ гЃ®й †гЃ«дё¦гЃіж›їгЃ€
 	k = 0;
 	for(i=0; i<n_detect; i++){
 		pml->priority_list[k++] = prior_detect[i];
@@ -1404,8 +1467,8 @@ void MultLogoFind_TotalResult(MLOGO_DATASET* pml){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃF‘S‰ж‘њЊџЏoЉ®—№Њг‚ЙЋАЌs‚µ‚ДѓЌѓS•\Ћ¦‹жЉФ‚рЊџЏo
-// ѓЌѓSЉъЉФ‚рЊџЏoЃi‘SѓЌѓSЊџЏo‚µЃA•K—v‚ИѓЌѓSЉъЉФЌ‡ЋZ‚аЋАЌsЃj
+// Publicй–ўж•°пјље…Ёз”»еѓЏж¤ње‡єе®Њдє†еѕЊгЃ«е®џиЎЊгЃ—гЃ¦гѓ­г‚ґиЎЁз¤єеЊєй–“г‚’ж¤ње‡є
+// гѓ­г‚ґжњџй–“г‚’ж¤ње‡єпј€е…Ёгѓ­г‚ґж¤ње‡єгЃ—гЂЃеї…и¦ЃгЃЄгѓ­г‚ґжњџй–“еђ€з®—г‚‚е®џиЎЊпј‰
 //=====================================================================
 void MultLogoFind(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1422,21 +1485,21 @@ void MultLogoFind(MLOGO_DATASET* pml){
 			}
 		}
 	}
-	// ‘S‘МЊ‹‰КЏ€—ќ
+	// е…ЁдЅ“зµђжћње‡¦зђ†
 	MultLogoFind_TotalResult( pml );
 
-	//"-oa2"ѓfѓoѓbѓO—p–€ѓtѓЊЃ[ѓЂЏо•с‚рѓNѓЌЃ[ѓY
+	//"-oa2"гѓ‡гѓђгѓѓг‚°з”ЁжЇЋгѓ•гѓ¬гѓјгѓ жѓ…е ±г‚’г‚Їгѓ­гѓјг‚є
 	MultLogoFind_FileAna2Close( pml );
 }
 
 
 
-//##### Њ‹‰К‚Мѓtѓ@ѓCѓ‹Џo—Н
+//##### зµђжћњгЃ®гѓ•г‚Ўг‚¤гѓ«е‡єеЉ›
 
 //---------------------------------------------------------------------
-// "-o"ѓIѓvѓVѓ‡ѓ“‚ЕЋw’и‚·‚йѓtѓ@ѓCѓ‹‚рЏo—Н
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[
+// "-o"г‚Єгѓ—г‚·гѓ§гѓігЃ§жЊ‡е®љгЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«г‚’е‡єеЉ›
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoWrite_OutputAvs(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1475,8 +1538,8 @@ int MultLogoWrite_OutputAvs(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// ЉeЊВ•КѓЌѓS‚М"-oa"ѓIѓvѓVѓ‡ѓ“‚Й‘О‰ћ‚·‚йѓtѓ@ѓCѓ‹‚МѓЉѓXѓg‚рЏo—Н
-// ЊџЏoѓЌѓSђ”ЃAЉeѓЌѓS‚Й‚В‚ў‚ДѓЌѓS–јЃAЊџЏoЌ‡ЊvЉъЉФЃAЊі‚МѓЌѓS”ФЌ†‚рЏo—Н
+// еђ„еЂ‹е€Ґгѓ­г‚ґгЃ®"-oa"г‚Єгѓ—г‚·гѓ§гѓігЃ«еЇѕеїњгЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«гЃ®гѓЄг‚№гѓ€г‚’е‡єеЉ›
+// ж¤ње‡єгѓ­г‚ґж•°гЂЃеђ„гѓ­г‚ґгЃ«гЃ¤гЃ„гЃ¦гѓ­г‚ґеђЌгЂЃж¤ње‡єеђ€иЁ€жњџй–“гЂЃе…ѓгЃ®гѓ­г‚ґз•ЄеЏ·г‚’е‡єеЉ›
 //---------------------------------------------------------------------
 void MultLogoWrite_OutputAnaEach_List(MLOGO_DATASET* pml, FILE* fpo_list){
 	int i, nid, nmax_loop;
@@ -1514,9 +1577,9 @@ void MultLogoWrite_OutputAnaEach_List(MLOGO_DATASET* pml, FILE* fpo_list){
 
 
 //---------------------------------------------------------------------
-// ЉeЊВ•КѓЌѓS‚М"-oa"ѓIѓvѓVѓ‡ѓ“‚Й‘О‰ћ‚·‚йѓtѓ@ѓCѓ‹‚рЏo—Н
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[  2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// еђ„еЂ‹е€Ґгѓ­г‚ґгЃ®"-oa"г‚Єгѓ—г‚·гѓ§гѓігЃ«еЇѕеїњгЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«г‚’е‡єеЉ›
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј  2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 	LOGO_DATASET* plogo;
@@ -1535,7 +1598,7 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 	ret = 0;
 	anafile = pml->opt_anafile;
 	// output each frame result (each logo result of "-oa" option)
-	if (anafile != NULL){					// newstr : "_list.ini"—М€жЉm•Ы
+	if (anafile != NULL){					// newstr : "_list.ini"й еџџзўєдїќ
 		newstr  = (char *)malloc( (strlen(anafile) +10 + 1) * sizeof(char) );
 		newstr1 = (char *)malloc( (strlen(anafile)     + 1) * sizeof(char) );
 		newstr2 = (char *)malloc( (strlen(anafile)     + 1) * sizeof(char) );
@@ -1544,7 +1607,7 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 			ret = 2;
 		}
 		else{
-			// Љg’ЈЋq‘O‚рnewstr1ЃAЉg’ЈЋq‚рnewstr2 ‚Й‘г“ь
+			// ж‹Ўејµе­ђе‰Ќг‚’newstr1гЂЃж‹Ўејµе­ђг‚’newstr2 гЃ«д»Је…Ґ
 			strcpy(newstr1, anafile);
 			tmpstr = strrchr(newstr1, '.');
 			if (tmpstr != NULL){
@@ -1554,16 +1617,16 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 			else{
 				strcpy(newstr2, "");
 			}
-			// ЊВ•КѓЌѓSЏо•сѓЉѓXѓg‚рЏo—Н
+			// еЂ‹е€Ґгѓ­г‚ґжѓ…е ±гѓЄг‚№гѓ€г‚’е‡єеЉ›
 			if ((pml->oamask & 8) == 0){
-				// Џo—Н‚·‚йѓtѓ@ѓCѓ‹–ј‚р newstr ‚Й‘г“ьЃi•K—v•¶Ћљђ”malloc‚ЕЋ–‘OЉm•ЫЃj
+				// е‡єеЉ›гЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«еђЌг‚’ newstr гЃ«д»Је…Ґпј€еї…и¦Ѓж–‡е­—ж•°mallocгЃ§дє‹е‰Ќзўєдїќпј‰
 				sprintf(newstr, "%s_list.ini", newstr1);
 				fpo_list = fopen(newstr, "w");
 				if (!fpo_list){
 					fprintf(stderr, "error: failed to create/open '%s'\n", newstr);
 					ret = 1;
 				}
-				else{	// INIѓwѓbѓ_ЃA‚»‚М‘јЏо•с‚рЏo—Н
+				else{	// INIгѓгѓѓгѓЂгЂЃгЃќгЃ®д»–жѓ…е ±г‚’е‡єеЉ›
 					MultLogoWrite_OutputAnaEach_List(pml, fpo_list);
 				}
 			}
@@ -1571,10 +1634,10 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 				fpo_list = NULL;
 			}
 
-			// ЉeѓЌѓSѓfЃ[ѓ^‚М•\Ћ¦ЉъЉФ‚рЏo—Н
+			// еђ„гѓ­г‚ґгѓ‡гѓјг‚їгЃ®иЎЁз¤єжњџй–“г‚’е‡єеЉ›
 			nmax_loop = pml->num_detect + pml->num_others + pml->num_disable;
 			for(i=0; i < nmax_loop; i++){
-				// ѓЌѓSЋн—Ю‚Ж”ФЌ†‚рЋж“ѕ
+				// гѓ­г‚ґзЁ®йЎћгЃЁз•ЄеЏ·г‚’еЏ–еѕ—
 				isel = pml->priority_list[i];
 				if (i < pml->num_detect){
 					nid = i + 1;
@@ -1597,10 +1660,10 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 						nid = -1;
 					}
 				}
-				// ѓЌѓSЏо•сЏo—Н
+				// гѓ­г‚ґжѓ…е ±е‡єеЉ›
 				plogo      = pml->all_logodata[isel];
 				if (plogo != NULL && nid > 0){
-					// Џo—Н‚·‚йѓtѓ@ѓCѓ‹–ј‚р newstr ‚Й‘г“ьЃi•K—v•¶Ћљђ”malloc‚ЕЋ–‘OЉm•ЫЃj
+					// е‡єеЉ›гЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«еђЌг‚’ newstr гЃ«д»Је…Ґпј€еї…и¦Ѓж–‡е­—ж•°mallocгЃ§дє‹е‰Ќзўєдїќпј‰
 					sprintf(newstr, "%s_%s%d%s", newstr1, stradd, nid, newstr2);
 					fpo_ana = fopen(newstr, "w");
 					if (!fpo_ana){
@@ -1611,7 +1674,7 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 					LogoWriteFind( plogo, fpo_ana );
 					fclose(fpo_ana);
 
-					// Џo—Н‚µ‚Ѕѓtѓ@ѓCѓ‹–ј‚рЊВ•КѓЌѓSЏо•сѓЉѓXѓg‚Й’З‰Б‚·‚йЏ€—ќ
+					// е‡єеЉ›гЃ—гЃџгѓ•г‚Ўг‚¤гѓ«еђЌг‚’еЂ‹е€Ґгѓ­г‚ґжѓ…е ±гѓЄг‚№гѓ€гЃ«иїЅеЉ гЃ™г‚‹е‡¦зђ†
 					if (fpo_list != NULL){
 						if (strlen(stradd) == 0){
 							strcpy(stradd, "N");
@@ -1634,9 +1697,9 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 
 
 //---------------------------------------------------------------------
-// "-oa"ѓIѓvѓVѓ‡ѓ“‚ЕЋw’и‚·‚йѓtѓ@ѓCѓ‹‚рЏo—Н
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[
+// "-oa"г‚Єгѓ—г‚·гѓ§гѓігЃ§жЊ‡е®љгЃ™г‚‹гѓ•г‚Ўг‚¤гѓ«г‚’е‡єеЉ›
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј
 //---------------------------------------------------------------------
 int MultLogoWrite_OutputAnaTotal(MLOGO_DATASET* pml){
 	const char* anafile;
@@ -1658,28 +1721,28 @@ int MultLogoWrite_OutputAnaTotal(MLOGO_DATASET* pml){
 
 
 //=====================================================================
-// PublicЉЦђ”ЃFЊ‹‰Кѓtѓ@ѓCѓ‹Џo—Н
-// ЌЕЏIЊ‹‰К‚рѓtѓ@ѓCѓ‹‚ЦЏo—Н
-//  Џo—Н
-//   •Ф‚и’l : 0=ђіЏн  1=ѓtѓ@ѓCѓ‹ѓGѓ‰Ѓ[ 2=ѓЃѓ‚ѓЉЉm•ЫѓGѓ‰Ѓ[
+// Publicй–ўж•°пјљзµђжћњгѓ•г‚Ўг‚¤гѓ«е‡єеЉ›
+// жњЂзµ‚зµђжћњг‚’гѓ•г‚Ўг‚¤гѓ«гЃёе‡єеЉ›
+//  е‡єеЉ›
+//   иї”г‚ЉеЂ¤ : 0=ж­Јеёё  1=гѓ•г‚Ўг‚¤гѓ«г‚Ёгѓ©гѓј 2=гѓЎгѓўгѓЄзўєдїќг‚Ёгѓ©гѓј
 //=====================================================================
 int MultLogoWrite(MLOGO_DATASET* pml){
 	int errnum, retval;
 
 	retval = 0;
-	// AVSЊ`Ћ®ѓЌѓSЏо•сЏo—Н "-o"ѓIѓvѓVѓ‡ѓ“
+	// AVSеЅўејЏгѓ­г‚ґжѓ…е ±е‡єеЉ› "-o"г‚Єгѓ—г‚·гѓ§гѓі
 	errnum = MultLogoWrite_OutputAvs(pml);
 	if (errnum != 0){
 		retval = errnum;
 	}
 
-	// Ќ‡ЋZѓЌѓSЊџЏoЊ‹‰К‚рЏo—Н "-oa"ѓIѓvѓVѓ‡ѓ“
+	// еђ€з®—гѓ­г‚ґж¤ње‡єзµђжћњг‚’е‡єеЉ› "-oa"г‚Єгѓ—г‚·гѓ§гѓі
 	errnum = MultLogoWrite_OutputAnaTotal(pml);
 	if (errnum != 0){
 		retval = errnum;
 	}
 
-	// ЉeѓЌѓSЊџЏoЊ‹‰К‚рЏo—Н ЉeЊВ•КѓЌѓS‚М"-oa"ѓIѓvѓVѓ‡ѓ“
+	// еђ„гѓ­г‚ґж¤ње‡єзµђжћњг‚’е‡єеЉ› еђ„еЂ‹е€Ґгѓ­г‚ґгЃ®"-oa"г‚Єгѓ—г‚·гѓ§гѓі
 	errnum = MultLogoWrite_OutputAnaEach(pml);
 	if (errnum != 0){
 		retval = errnum;

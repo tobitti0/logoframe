@@ -17,10 +17,13 @@
 #include <strings.h>
 #endif
 #include <fcntl.h>
-#include "avs_internal.c"
 #include "logo.h"
 #include "logoset.h"
 #include "logoset_mul.h"
+
+#include <avisynth.h>
+#include <stdio.h>
+#include <dlfcn.h>
 
 #ifndef _WIN32
 #define stricmp strcasecmp
@@ -62,6 +65,7 @@ static int csp_to_int(const char *arg)
     return 0;
 }
 
+const AVS_Linkage *AVS_linkage = nullptr;
 
 int main(int argc, const char* argv[])
 {
@@ -206,99 +210,108 @@ int main(int argc, const char* argv[])
 
 	//--- avisynth ---
     int retval = 1;
-    avs_hnd_t avs_h = {0};
-    if(internal_avs_load_library(&avs_h) < 0) {
-        fprintf(stderr, "error: failed to load avisynth.dll\n");
-        goto fail;
+
+    void *handle = dlopen("libavisynth.so", RTLD_LAZY);
+    if (handle == NULL) {
+	    fprintf(stdout, "Cannot load libavisynth.so\r\n");
+	    goto fail;
     }
 
-    avs_h.env = avs_h.func.avs_create_script_environment(AVS_INTERFACE_25);
-    if(avs_h.func.avs_get_error) {
-        const char *error = avs_h.func.avs_get_error(avs_h.env);
-        if(error) {
-            fprintf(stderr, "error: %s\n", error);
-            goto fail;
-        }
+
+    void *mkr = dlsym(handle, "CreateScriptEnvironment");
+    if(mkr == NULL) {
+      fprintf(stdout, "Cannot find CreateScriptEnvironment\r\n");
+      goto fail;
+    }
+  
+    typedef IScriptEnvironment * (* func_t)(int);
+    func_t CreateScriptEnvironment = (func_t)mkr;
+    IScriptEnvironment *env = CreateScriptEnvironment(AVISYNTH_INTERFACE_VERSION);
+  
+    AVS_linkage = env->GetAVSLinkage(); // e.g. for VideoInfo.BitsPerComponent, etc..
+
+
+    AVSValue arg = infile;
+    AVSValue res;
+    try {
+      // replace test.avs with an unknown filename to get and catch avisynth error
+      res = env->Invoke("Import", arg);
+    }
+    catch (const AvisynthError &err) {
+      fprintf(stdout,"Avisynth error: %s\r\n", err.msg);
+      goto fail;
     }
 
-    AVS_Value arg = avs_new_value_string(infile);
-    AVS_Value res = avs_h.func.avs_invoke(avs_h.env, "Import", arg, NULL);
-    if(avs_is_error(res)) {
-        fprintf(stderr, "error: %s\n", avs_as_string(res));
-        goto fail;
-    }
-    /* check if the user is using a multi-threaded script and apply distributor if necessary.
-       adapted from avisynth's vfw interface */
-    AVS_Value mt_test = avs_h.func.avs_invoke(avs_h.env, "GetMTMode", avs_new_value_bool(0), NULL);
-    int mt_mode = avs_is_int(mt_test) ? avs_as_int(mt_test) : 0;
-    avs_h.func.avs_release_value(mt_test);
-    if( mt_mode > 0 && mt_mode < 5 ) {
-        AVS_Value temp = avs_h.func.avs_invoke(avs_h.env, "Distributor", res, NULL);
-        avs_h.func.avs_release_value(res);
-        res = temp;
-    }
-    if(!avs_is_clip(res)) {
+    if(!res.IsClip()) {
         fprintf(stderr, "error: '%s' didn't return a video clip\n", infile);
         goto fail;
     }
-    avs_h.clip = avs_h.func.avs_take_clip(res, avs_h.env);
-    const AVS_VideoInfo *inf = avs_h.func.avs_get_video_info(avs_h.clip);
-    if(!avs_has_video(inf)) {
+    PClip clip = res.AsClip();
+    VideoInfo inf = clip->GetVideoInfo();
+    if(!inf.HasVideo()) {
         fprintf(stderr, "error: '%s' has no video data\n", infile);
         goto fail;
     }
     /* if the clip is made of fields instead of frames, call weave to make them frames */
-    if(avs_is_field_based(inf)) {
+    if(inf.IsFieldBased()) {
         fprintf(stderr, "detected fieldbased (separated) input, weaving to frames\n");
-        AVS_Value tmp = avs_h.func.avs_invoke(avs_h.env, "Weave", res, NULL);
-        if(avs_is_error(tmp)) {
-            fprintf(stderr, "error: couldn't weave fields into frames\n");
-            goto fail;
+	AVSValue tmp;
+        try {
+            tmp = env->Invoke("Weave", res);
         }
-        res = internal_avs_update_clip(&avs_h, &inf, tmp, res);
+        catch (const AvisynthError &err) {
+          fprintf(stderr, "error: couldn't weave fields into frames\n");
+          goto fail;
+        }
+        res = tmp;
+      	clip = res.AsClip();
+      	inf = clip->GetVideoInfo();
         interlaced = 1;
-        tff = avs_is_tff(inf);
+	tff = inf.IsTFF();
     }
-    fprintf(stderr, "%s: %dx%d, ", infile, inf->width, inf->height);
-    if(inf->fps_denominator == 1)
-        fprintf(stderr, "%d fps, ", inf->fps_numerator);
+    fprintf(stderr, "%s: %dx%d, ", infile, inf.width, inf.height);
+    if(inf.fps_denominator == 1)
+        fprintf(stderr, "%d fps, ", inf.fps_numerator);
     else
-        fprintf(stderr, "%d/%d fps, ", inf->fps_numerator, inf->fps_denominator);
-    fprintf(stderr, "%d frames\n", inf->num_frames);
+        fprintf(stderr, "%d/%d fps, ", inf.fps_numerator, inf.fps_denominator);
+    fprintf(stderr, "%d frames\n", inf.num_frames);
 
-    if( (csp == CSP_I420 && 12 != avs_bits_per_pixel(inf)) ||
-        (csp == CSP_I422 && 16 != avs_bits_per_pixel(inf)) ||
-        (csp == CSP_I444 && 24 != avs_bits_per_pixel(inf)) )
+    if( (csp == CSP_I420 && 12 != inf.BitsPerPixel()) ||
+        (csp == CSP_I422 && 16 != inf.BitsPerPixel()) ||
+        (csp == CSP_I444 && 24 != inf.BitsPerPixel()) )
     {
         const char *csp_name = csp == CSP_I444 ? "YV24" :
                                csp == CSP_I422 ? "YV16" :
                                "YV12";
         fprintf(stderr, "converting input clip to %s\n", csp_name);
-        if(csp < CSP_I444 && (inf->width&1)) {
-            fprintf(stderr, "error: input clip width not divisible by 2 (%dx%d)\n", inf->width, inf->height);
+        if(csp < CSP_I444 && (inf.width&1)) {
+            fprintf(stderr, "error: input clip width not divisible by 2 (%dx%d)\n", inf.width, inf.height);
             goto fail;
         }
-        if(csp == CSP_I420 && interlaced && (inf->height&3)) {
-            fprintf(stderr, "error: input clip height not divisible by 4 (%dx%d)\n", inf->width, inf->height);
+        if(csp == CSP_I420 && interlaced && (inf.height&3)) {
+            fprintf(stderr, "error: input clip height not divisible by 4 (%dx%d)\n", inf.width, inf.height);
             goto fail;
         }
-        if((csp == CSP_I420 || interlaced) && (inf->height&1)) {
-            fprintf(stderr, "error: input clip height not divisible by 2 (%dx%d)\n", inf->width, inf->height);
+        if((csp == CSP_I420 || interlaced) && (inf.height&1)) {
+            fprintf(stderr, "error: input clip height not divisible by 2 (%dx%d)\n", inf.width, inf.height);
             goto fail;
         }
         const char *arg_name[2] = {NULL, "interlaced"};
-        AVS_Value arg_arr[2] = {res, avs_new_value_bool(interlaced)};
+        AVSValue arg_arr[2] = {res, bool(interlaced)};
         char conv_func[14] = {"ConvertTo"};
         strcat(conv_func, csp_name);
-        AVS_Value tmp = avs_h.func.avs_invoke(avs_h.env, conv_func, avs_new_value_array(arg_arr, 2), arg_name);
-        if(avs_is_error(tmp)) {
-            fprintf(stderr, "error: couldn't convert input clip to %s\n", csp_name);
-            goto fail;
+	AVSValue tmp;
+        try {
+            tmp = env->Invoke(conv_func, (arg_arr, 2), arg_name);
         }
-        res = internal_avs_update_clip(&avs_h, &inf, tmp, res);
+        catch (const AvisynthError &err) {
+          fprintf(stderr, "error: couldn't convert input clip to %s\n", csp_name);
+          goto fail;
+        }
+        res = tmp;
+      	clip = res.AsClip();
+      	inf = clip->GetVideoInfo();
     }
-    avs_h.func.avs_release_value(res);
-
 
     char *interlace_type = interlaced ? tff ? "t" : "b" : "p";
     char *csp_type = NULL;
@@ -322,12 +335,12 @@ int main(int argc, const char* argv[])
     }
     if (nodisp == 0){
 	    printf("YUV4MPEG2 W%d H%d F%u:%u I%s A0:0 C%s\n",
-	        inf->width, inf->height, inf->fps_numerator, inf->fps_denominator, interlace_type, csp_type);
+	        inf.width, inf.height, inf.fps_numerator, inf.fps_denominator, interlace_type, csp_type);
 	}
 
     end += seek;
-    if(end <= seek || end > inf->num_frames)
-        end = inf->num_frames;
+    if(end <= seek || end > inf.num_frames)
+        end = inf.num_frames;
 
 
 //--------------- start logoframe from here ---------------
@@ -335,10 +348,10 @@ int main(int argc, const char* argv[])
 	int height;
 
 	// for checking if logodata area is out of image data
-	height = inf->height;
+	height = inf.height;
 
 	// setup for logo detection
-	errnum = MultLogoSetup( &logodata, inf->num_frames );  // for LOGO
+	errnum = MultLogoSetup( &logodata, inf.num_frames );  // for LOGO
 	if (errnum != 0){
 		if (errnum == 3){		// no logo definition found
 			retval = 0;
@@ -360,15 +373,17 @@ int main(int argc, const char* argv[])
 	}
     for(int frm = seek; frm < end; ++frm) {
         //--- avisynth start ---
-        AVS_VideoFrame *f = avs_h.func.avs_get_frame(avs_h.clip, frm);
-        const char *err = avs_h.func.avs_clip_get_error(avs_h.clip);
-        if(err) {
-            fprintf(stderr, "error: %s occurred while reading frame %d\n", err, frm);
-            goto fail;
+	PVideoFrame f;
+        try {
+            f = clip->GetFrame(frm,env);
         }
-        static const int planes[] = {AVS_PLANAR_Y, AVS_PLANAR_U, AVS_PLANAR_V};
-        int pitch = avs_get_pitch_p(f, planes[0]);
-        const BYTE* data = avs_get_read_ptr_p(f, planes[0]);
+        catch (const AvisynthError &err) {
+          fprintf(stderr, "error: %s occurred while reading frame %d\n", err, frm);
+          goto fail;
+        }
+        static const int planes[] = {PLANAR_Y, PLANAR_U, PLANAR_V};
+        int pitch = f->GetPitch(planes[0]); 
+	const BYTE* data = f->GetReadPtr(planes[0]);
         //--- avisynth end ---
 
 		// detect logo in a picture
@@ -383,7 +398,6 @@ int main(int argc, const char* argv[])
 		}
 
 		//--- avisynth command ---
-        avs_h.func.avs_release_video_frame(f);
 	}
 	if (nodisp == 0){
 		printf("checking %6d/%d ended.\n", end-1, end-1);
@@ -394,7 +408,9 @@ int main(int argc, const char* argv[])
 
 	// output result
 	MultLogoWrite( &logodata );    // for LOGO
-
+	
+	//env->DeleteScriptEnvironment();
+	//dlclose(handle);
 
 //--------------- end logoframe ---------------
 
@@ -405,7 +421,8 @@ fail:
 	MultLogoFree( &logodata );     // for LOGO
 
 	//--- avisynth command ---
-    if(avs_h.library)
-        internal_avs_close_library(&avs_h);
+    //if (env != NULL) env->DeleteScriptEnvironment();
+    
+    if (handle != NULL) dlclose(handle);
 	return retval;
 }

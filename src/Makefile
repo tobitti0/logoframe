@@ -1,9 +1,9 @@
 PROGRAM = logoframe
 OBJS = logoframe.o logoframe_det.o logoframe_mul.o
 
-CC = g++
-CFLAGS = -O3 -I/usr/local/include/avisynth -ffast-math -Wall -Wshadow -Wempty-body -I. -fpermissive -std=gnu99 -fomit-frame-pointer -s -fno-tree-vectorize -fno-zero-initialized-in-bss
-LDLAGS = -ldl -pthread
+CC = gcc
+CFLAGS = -O3 -xc++ -I/usr/local/include/avisynth -ffast-math -Wall -fpermissive -Wshadow -Wempty-body -I. -std=gnu99 -fomit-frame-pointer -s -fno-tree-vectorize -fno-zero-initialized-in-bss
+LDLAGS = -ldl -pthread -lstdc++
 
 .SUFFIXES: .c .o
 

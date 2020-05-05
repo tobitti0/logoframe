@@ -1,4 +1,4 @@
-# 透過ロゴ表示区間検出 logoframe for Linux & AviSynth+3.5.x
+# 透過ロゴ表示区間検出 logoframe for AviSynth+ 3.5.x & Linux
 ## 概要
 AviSynth+はVer3.5.0からNative Linuxをサポートした。  
 これは[sogaani氏][1]がLinuxに移植された[logoframe][2]をAviSynth+3.5.xで動作するように改造したものである。

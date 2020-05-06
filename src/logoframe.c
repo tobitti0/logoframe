@@ -65,6 +65,17 @@ static int csp_to_int(const char *arg)
     return 0;
 }
 
+int fail(MLOGO_DATASET logodata, void *handle, int retval){
+	MultLogoFree( &logodata );     // for LOGO
+
+	//--- avisynth command ---
+    //if (env != NULL) env->DeleteScriptEnvironment();
+    
+    if (handle != NULL) dlclose(handle);
+	return retval;
+    
+}
+
 const AVS_Linkage *AVS_linkage = nullptr;
 
 int main(int argc, const char* argv[])
@@ -214,14 +225,14 @@ int main(int argc, const char* argv[])
     void *handle = dlopen("libavisynth.so", RTLD_LAZY);
     if (handle == NULL) {
 	    fprintf(stdout, "Cannot load libavisynth.so\r\n");
-	    goto fail;
+	    fail(logodata, handle, retval);
     }
 
 
     void *mkr = dlsym(handle, "CreateScriptEnvironment");
     if(mkr == NULL) {
       fprintf(stdout, "Cannot find CreateScriptEnvironment\r\n");
-      goto fail;
+	    fail(logodata, handle, retval);
     }
   
     typedef IScriptEnvironment * (* func_t)(int);
@@ -239,18 +250,18 @@ int main(int argc, const char* argv[])
     }
     catch (const AvisynthError &err) {
       fprintf(stdout,"Avisynth error: %s\r\n", err.msg);
-      goto fail;
+	    fail(logodata, handle, retval);
     }
 
     if(!res.IsClip()) {
         fprintf(stderr, "error: '%s' didn't return a video clip\n", infile);
-        goto fail;
+	      fail(logodata, handle, retval);
     }
     PClip clip = res.AsClip();
     VideoInfo inf = clip->GetVideoInfo();
     if(!inf.HasVideo()) {
         fprintf(stderr, "error: '%s' has no video data\n", infile);
-        goto fail;
+	      fail(logodata, handle, retval);
     }
     /* if the clip is made of fields instead of frames, call weave to make them frames */
     if(inf.IsFieldBased()) {
@@ -261,7 +272,7 @@ int main(int argc, const char* argv[])
         }
         catch (const AvisynthError &err) {
           fprintf(stderr, "error: couldn't weave fields into frames\n");
-          goto fail;
+	        fail(logodata, handle, retval);
         }
         res = tmp;
       	clip = res.AsClip();
@@ -286,15 +297,15 @@ int main(int argc, const char* argv[])
         fprintf(stderr, "converting input clip to %s\n", csp_name);
         if(csp < CSP_I444 && (inf.width&1)) {
             fprintf(stderr, "error: input clip width not divisible by 2 (%dx%d)\n", inf.width, inf.height);
-            goto fail;
+	          fail(logodata, handle, retval);
         }
         if(csp == CSP_I420 && interlaced && (inf.height&3)) {
             fprintf(stderr, "error: input clip height not divisible by 4 (%dx%d)\n", inf.width, inf.height);
-            goto fail;
+	          fail(logodata, handle, retval);
         }
         if((csp == CSP_I420 || interlaced) && (inf.height&1)) {
             fprintf(stderr, "error: input clip height not divisible by 2 (%dx%d)\n", inf.width, inf.height);
-            goto fail;
+	          fail(logodata, handle, retval);
         }
         const char *arg_name[2] = {NULL, "interlaced"};
         AVSValue arg_arr[2] = {res, bool(interlaced)};
@@ -306,7 +317,7 @@ int main(int argc, const char* argv[])
         }
         catch (const AvisynthError &err) {
           fprintf(stderr, "error: couldn't convert input clip to %s\n", csp_name);
-          goto fail;
+	        fail(logodata, handle, retval);
         }
         res = tmp;
       	clip = res.AsClip();
@@ -331,7 +342,8 @@ int main(int argc, const char* argv[])
             csp_type = "444";
             break;
         default:
-            goto fail; //can't happen
+            //can't happen
+            fail(logodata, handle, retval);
     }
     if (nodisp == 0){
 	    printf("YUV4MPEG2 W%d H%d F%u:%u I%s A0:0 C%s\n",
@@ -356,7 +368,7 @@ int main(int argc, const char* argv[])
 		if (errnum == 3){		// no logo definition found
 			retval = 0;
 		}
-		goto fail;
+	  fail(logodata, handle, retval);
 	}
 
 	// display parameter
@@ -379,7 +391,7 @@ int main(int argc, const char* argv[])
         }
         catch (const AvisynthError &err) {
           fprintf(stderr, "error: %s occurred while reading frame %d\n", err, frm);
-          goto fail;
+	        fail(logodata, handle, retval);
         }
         static const int planes[] = {PLANAR_Y, PLANAR_U, PLANAR_V};
         int pitch = f->GetPitch(planes[0]); 
@@ -416,13 +428,6 @@ int main(int argc, const char* argv[])
 
 
 //close_files:
-    retval = 0;
-fail:
-	MultLogoFree( &logodata );     // for LOGO
-
-	//--- avisynth command ---
-    //if (env != NULL) env->DeleteScriptEnvironment();
-    
-    if (handle != NULL) dlclose(handle);
-	return retval;
+  retval = 0;
+  return retval;
 }

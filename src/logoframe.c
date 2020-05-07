@@ -429,5 +429,9 @@ int main(int argc, const char* argv[])
 
 //close_files:
   retval = 0;
+  MultLogoFree( &logodata );     // for LOGO
+  //--- avisynth command ---
+  //if (env != NULL) env->DeleteScriptEnvironment();
+  if (handle != NULL) dlclose(handle);
   return retval;
 }

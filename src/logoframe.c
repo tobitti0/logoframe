@@ -212,10 +212,10 @@ int main(int argc, const char* argv[])
     nodisp = 1;
   }
   if (nopt_fromini > 0 && nodisp == 0){
-    printf("Info: read %d options from logoframe.ini\n", nopt_fromini);
+    fprintf(stderr, "Info: read %d options from logoframe.ini\n", nopt_fromini);
   }
   if (nopt_fromfile > 0 && nodisp == 0){
-    printf("Info: read %d options from -F file\n", nopt_fromfile);
+    fprintf(stderr, "Info: read %d options from -F file\n", nopt_fromfile);
   }
 
 
@@ -224,14 +224,14 @@ int main(int argc, const char* argv[])
 
   void *handle = dlopen("libavisynth.so", RTLD_LAZY);
   if (handle == NULL) {
-    fprintf(stdout, "Cannot load libavisynth.so\r\n");
+    fprintf(stderr, "Cannot load libavisynth.so\r\n");
     fail(logodata, handle, retval);
   }
 
 
   void *mkr = dlsym(handle, "CreateScriptEnvironment");
   if(mkr == NULL) {
-    fprintf(stdout, "Cannot find CreateScriptEnvironment\r\n");
+    fprintf(stderr, "Cannot find CreateScriptEnvironment\r\n");
     fail(logodata, handle, retval);
   }
 
@@ -249,7 +249,7 @@ int main(int argc, const char* argv[])
     res = env->Invoke("Import", arg);
   }
   catch (const AvisynthError &err) {
-    fprintf(stdout,"Avisynth error: %s\r\n", err.msg);
+    fprintf(stderr,"Avisynth error: %s\r\n", err.msg);
     fail(logodata, handle, retval);
   }
 
@@ -346,7 +346,7 @@ int main(int argc, const char* argv[])
       fail(logodata, handle, retval);
   }
   if (nodisp == 0){
-    printf("YUV4MPEG2 W%d H%d F%u:%u I%s A0:0 C%s\n",
+    fprintf(stderr, "YUV4MPEG2 W%d H%d F%u:%u I%s A0:0 C%s\n",
         inf.width, inf.height, inf.fps_numerator, inf.fps_denominator, interlace_type, csp_type);
   }
 
@@ -376,12 +376,12 @@ int main(int argc, const char* argv[])
     MultLogoDisplayParam( &logodata );        // for LOGO
   }
   if (nodisp == 0){
-    printf("Total logodata : %d\n", logodata.num_deflogo);  // for LOGO
+    fprintf(stderr, "Total logodata : %d\n", logodata.num_deflogo);  // for LOGO
   }
 
   // read framedata
   if (nodisp == 0){
-    printf("checking %6d/%d start.\n", seek, end-1);
+    fprintf(stderr, "checking %6d/%d start.\n", seek, end-1);
   }
   for(int frm = seek; frm < end; ++frm) {
     //--- avisynth start ---
@@ -405,14 +405,14 @@ int main(int argc, const char* argv[])
       if (((frm % 5000 == 0) && (frm != 0)) ||
           (frm == 100) ||
           (frm == 1000)){
-        printf("checking %6d/%d ended.\n", frm, end-1);
+        fprintf(stderr, "checking %6d/%d ended.\n", frm, end-1);
       }
     }
 
     //--- avisynth command ---
   }
   if (nodisp == 0){
-    printf("checking %6d/%d ended.\n", end-1, end-1);
+    fprintf(stderr, "checking %6d/%d ended.\n", end-1, end-1);
   }
 
   // find logo-on frames

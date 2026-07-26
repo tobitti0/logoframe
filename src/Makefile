@@ -1,5 +1,5 @@
 PROGRAM := logoframe
-OBJS := logoframe.o logoframe_det.o logoframe_mul.o
+OBJS := logoframe.o logo_generator.o logoframe_det.o logoframe_mul.o
 
 CXX ?= g++
 PKG_CONFIG ?= pkg-config
@@ -153,10 +153,13 @@ $(DTVINDEX_LIBRARY):
 	$(MAKE) -C "$(DTVINDEX_SOURCE_DIR)" build/libdtvindex.a
 endif
 
-logoframe.o: video_source.h
+logoframe.o: video_source.h logo_generator.h
 ifeq ($(ENABLE_DTVINDEX),yes)
 logoframe.o: dtvindex_video_source.h
 endif
+
+logo_generator.o: logo_generator.cpp logo_generator.h video_source.h logo.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<
 
 .c.o:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $<

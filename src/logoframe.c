@@ -5,8 +5,7 @@
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
+// the Free Software Foundation, version 3 of the License.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +17,7 @@
 #endif
 #include <fcntl.h>
 #include "logo.h"
+#include "logo_generator.h"
 #include "logoset.h"
 #include "logoset_mul.h"
 #include "video_source.h"
@@ -27,7 +27,10 @@
 
 #ifndef _WIN32
 #define stricmp strcasecmp
+#define strnicmp strncasecmp
 typedef unsigned char BYTE;
+#else
+#define strnicmp _strnicmp
 #endif
 
 // logo function
@@ -47,9 +50,205 @@ extern int  MultLogoWrite(MLOGO_DATASET* pml);
 #define INT_MAX 0x7fffffff
 #endif
 
-#define MY_VERSION "logoframe 1.20"
+#define MY_VERSION "logoframe 1.21"
 #define AVS_BUFSIZE 128*1024
 //#define FILE_BUFSIZE 512
+
+struct DetectionResult {
+  int setup_error;
+  double match_ratio;
+
+  DetectionResult() : setup_error(0), match_ratio(0.0) {}
+};
+
+static bool option_needs_value(const char *option)
+{
+  return !stricmp(option, "-F") ||
+      !stricmp(option, "-seek") ||
+      !stricmp(option, "-frames") ||
+      !stricmp(option, "-csp") ||
+      !stricmp(option, "-channel") ||
+      !stricmp(option, "-logo-dir") ||
+      !stricmp(option, "-logo-area") ||
+      !stricmp(option, "-logo-samples") ||
+      !stricmp(option, "-logo-bg-threshold") ||
+      !stricmp(option, "-logo-edge-threshold") ||
+      !stricmp(option, "-logo-match");
+}
+
+static bool is_managed_logo_option(const char *option)
+{
+  return !stricmp(option, "-channel") ||
+      !stricmp(option, "-logo-dir") ||
+      !stricmp(option, "-logo-area") ||
+      !stricmp(option, "-logo-samples") ||
+      !stricmp(option, "-logo-bg-threshold") ||
+      !stricmp(option, "-logo-edge-threshold") ||
+      !stricmp(option, "-logo-match");
+}
+
+static bool is_general_option(const char *option)
+{
+  return !stricmp(option, "-F") ||
+      !stricmp(option, "-nodisp") ||
+      !stricmp(option, "-errforce") ||
+      !stricmp(option, "-h") ||
+      !stricmp(option, "-seek") ||
+      !stricmp(option, "-frames") ||
+      !stricmp(option, "-csp");
+}
+
+static bool is_explicit_logo_option(const char *option)
+{
+  if (!stricmp(option, "-logo")) {
+    return true;
+  }
+  if (strnicmp(option, "-logo", 5) != 0 || option[5] == 0) {
+    return false;
+  }
+  for (int i = 5; option[i] != 0; ++i) {
+    if (option[i] < '0' || option[i] > '9') {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool parse_logo_rect(const char *value, LogoRect *rect)
+{
+  int x = 0;
+  int y = 0;
+  int width = 0;
+  int height = 0;
+  char tail = 0;
+  if (sscanf(value, "%d,%d,%d,%d%c",
+          &x, &y, &width, &height, &tail) != 4 ||
+      x < 0 || y < 0 || width <= 0 || height <= 0) {
+    return false;
+  }
+  *rect = LogoRect(x, y, width, height);
+  return true;
+}
+
+static void clear_logo_file_options(MLOGO_DATASET *logodata)
+{
+  if (logodata->opt_logofilename != NULL) {
+    free(logodata->opt_logofilename);
+    logodata->opt_logofilename = NULL;
+  }
+  for (int i = 0; i < LOGONUM_MAX; ++i) {
+    if (logodata->all_logofilename[i] != NULL) {
+      free(logodata->all_logofilename[i]);
+      logodata->all_logofilename[i] = NULL;
+    }
+  }
+}
+
+static int set_managed_logo(
+    MLOGO_DATASET *logodata,
+    const std::string &path)
+{
+  clear_logo_file_options(logodata);
+  return MultLogoOptionAdd(logodata, "-logo", path.c_str()) < 0
+      ? 2
+      : 0;
+}
+
+static int reload_logo_options(
+    MLOGO_DATASET *logodata,
+    int argc,
+    const char *argv[],
+    const std::string &managed_logo_path)
+{
+  MultLogoFree(logodata);
+  MultLogoInit(logodata);
+  MultLogoOptionOrgFile(logodata);
+
+  for (int i = 1; i < argc; ++i) {
+    if (!stricmp(argv[i], "-F") && i + 1 < argc) {
+      if (MultLogoOptionFile(logodata, argv[i + 1]) < 0) {
+        return 2;
+      }
+      ++i;
+    }
+  }
+  for (int i = 1; i < argc; ++i) {
+    if (argv[i][0] != '-' || argv[i][1] == 0) {
+      continue;
+    }
+    if (is_managed_logo_option(argv[i]) ||
+        is_general_option(argv[i])) {
+      if (option_needs_value(argv[i]) && i + 1 < argc) {
+        ++i;
+      }
+      continue;
+    }
+    const char *value = i + 1 < argc ? argv[i + 1] : NULL;
+    const int consumed = MultLogoOptionAdd(logodata, argv[i], value);
+    if (consumed < 0) {
+      return 2;
+    }
+    if (consumed > 0) {
+      i += consumed - 1;
+    }
+  }
+  return set_managed_logo(logodata, managed_logo_path);
+}
+
+static DetectionResult detect_logo(
+    MLOGO_DATASET *logodata,
+    VideoSource &source,
+    int seek,
+    int end,
+    int height,
+    int nodisp)
+{
+  DetectionResult result;
+  const InputVideoInfo &info = source.info();
+  result.setup_error = MultLogoSetup(logodata, info.num_frames);
+  if (result.setup_error != 0) {
+    return result;
+  }
+
+  if (nodisp == 0 && logodata->paramoff == 0) {
+    MultLogoDisplayParam(logodata);
+  }
+  if (nodisp == 0) {
+    fprintf(stderr, "Total logodata : %d\n", logodata->num_deflogo);
+    fprintf(stderr, "checking %6d/%d start.\n", seek, end - 1);
+  }
+  for (int frame_number = seek; frame_number < end; ++frame_number) {
+    InputVideoFrame frame = source.read_frame(frame_number);
+    MultLogoCalc(
+        logodata,
+        frame.data,
+        frame.pitch,
+        frame_number,
+        height);
+    if (nodisp == 0 &&
+        (((frame_number % 5000 == 0) && frame_number != 0) ||
+         frame_number == 100 ||
+         frame_number == 1000)) {
+      fprintf(
+          stderr,
+          "checking %6d/%d ended.\n",
+          frame_number,
+          end - 1);
+    }
+  }
+  if (nodisp == 0) {
+    fprintf(stderr, "checking %6d/%d ended.\n", end - 1, end - 1);
+  }
+
+  MultLogoFind(logodata);
+  const int checked_frames = std::max(1, end - seek);
+  if (logodata->num_deflogo > 0) {
+    result.match_ratio =
+        logodata->total_frame[0] /
+        static_cast<double>(checked_frames);
+  }
+  return result;
+}
 
 static int csp_to_int(const char *arg)
 {
@@ -84,6 +283,8 @@ int main(int argc, const char* argv[])
   int interlaced = 0;
   int tff = 0;
   int csp = CSP_I420;
+  bool explicit_logo = false;
+  ManagedLogoOptions managed_logo;
   // logo data
   MLOGO_DATASET logodata;     // for LOGO
 
@@ -124,6 +325,78 @@ int main(int argc, const char* argv[])
       }
       else{
         strval = argv[i+1];
+      }
+      if (!stricmp(argv[i], "-channel")) {
+        if (strval == NULL) {
+          fprintf(stderr, "-channel needs an argument\n");
+          return 2;
+        }
+        managed_logo.channel = strval;
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-dir")) {
+        if (strval == NULL) {
+          fprintf(stderr, "-logo-dir needs an argument\n");
+          return 2;
+        }
+        managed_logo.directory = strval;
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-area")) {
+        if (strval == NULL ||
+            !parse_logo_rect(strval, &managed_logo.manual_rect)) {
+          fprintf(
+              stderr,
+              "-logo-area needs x,y,width,height\n");
+          return 2;
+        }
+        managed_logo.has_manual_rect = true;
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-samples")) {
+        if (strval == NULL ||
+            (managed_logo.sample_frames = atoi(strval)) < 8) {
+          fprintf(stderr, "-logo-samples must be 8 or greater\n");
+          return 2;
+        }
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-bg-threshold")) {
+        if (strval == NULL ||
+            (managed_logo.background_threshold = atoi(strval)) < 1 ||
+            managed_logo.background_threshold > 255) {
+          fprintf(
+              stderr,
+              "-logo-bg-threshold must be between 1 and 255\n");
+          return 2;
+        }
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-edge-threshold")) {
+        if (strval == NULL ||
+            (managed_logo.edge_threshold = atoi(strval)) < 1 ||
+            managed_logo.edge_threshold > 510) {
+          fprintf(
+              stderr,
+              "-logo-edge-threshold must be between 1 and 510\n");
+          return 2;
+        }
+        ++i;
+        continue;
+      } else if (!stricmp(argv[i], "-logo-match")) {
+        if (strval == NULL ||
+            (managed_logo.match_threshold_percent = atoi(strval)) < 0 ||
+            managed_logo.match_threshold_percent > 100) {
+          fprintf(
+              stderr,
+              "-logo-match must be between 0 and 100\n");
+          return 2;
+        }
+        ++i;
+        continue;
+      }
+      if (is_explicit_logo_option(argv[i])) {
+        explicit_logo = true;
       }
       ncnt = MultLogoOptionAdd( &logodata, argv[i], strval );  // for LOGO
       if (ncnt > 0){
@@ -184,8 +457,22 @@ int main(int argc, const char* argv[])
 
   if(usage || !infile){
     fprintf(stderr, MY_VERSION "\n"
-        "Usage: logoframe [options] input_video_or_avs [-logo data.lgd] [-oa outa.txt] [-o out.avs]\n"
+        "Usage: logoframe [options] input_video_or_avs [-logo data.lgd | -channel name] [-oa outa.txt] [-o out.avs]\n"
+        "Managed logo options:\n"
+        "  -channel name             use or generate the latest channel logo\n"
+        "  -logo-dir directory       logo repository directory [logo]\n"
+        "  -logo-area x,y,w,h        override automatic top-right search\n"
+        "  -logo-samples number      generation sample count [600]\n"
+        "  -logo-bg-threshold value  uniform background threshold [12]\n"
+        "  -logo-edge-threshold value persistent edge threshold [40]\n"
+        "  -logo-match percent       regenerate below this match rate [10]\n"
         );
+    return 2;
+  }
+  if (!managed_logo.channel.empty() && explicit_logo) {
+    fprintf(
+        stderr,
+        "-channel cannot be combined with -logo or -logoN\n");
     return 2;
   }
   if (err_count > 0 && errforce > 0){
@@ -235,57 +522,161 @@ int main(int argc, const char* argv[])
     if(end <= seek || end > inf.num_frames)
       end = inf.num_frames;
 
+    bool loaded_existing_logo = false;
+    std::string managed_logo_path;
+    int managed_logo_version = 0;
+    std::unique_ptr<LogoRepository> logo_repository;
+    if (!managed_logo.channel.empty()) {
+      logo_repository.reset(new LogoRepository(managed_logo));
+      loaded_existing_logo = logo_repository->find_latest(
+          &managed_logo_path, &managed_logo_version);
+      if (loaded_existing_logo) {
+        fprintf(
+            stderr,
+            "managed logo: channel=%s latest=v%04d %s\n",
+            managed_logo.channel.c_str(),
+            managed_logo_version,
+            managed_logo_path.c_str());
+      } else {
+        managed_logo_path =
+            logo_repository->next_path(&managed_logo_version);
+        fprintf(
+            stderr,
+            "managed logo: channel=%s has no logo; generating v%04d\n",
+            managed_logo.channel.c_str(),
+            managed_logo_version);
+        generate_logo(
+            *source,
+            managed_logo,
+            seek,
+            end,
+            managed_logo_path);
+        logo_repository->set_latest(
+            managed_logo_path, managed_logo_version);
+      }
+      if (set_managed_logo(&logodata, managed_logo_path) != 0) {
+        throw std::runtime_error(
+            "Could not select the managed logo");
+      }
+    }
 
     //--------------- start logoframe from here ---------------
-    int errnum;
-    int height;
-
-    // for checking if logodata area is out of image data
-    height = inf.height;
-
-    // setup for logo detection
-    errnum = MultLogoSetup( &logodata, inf.num_frames );  // for LOGO
-    if (errnum != 0){
-      retval = errnum == 3 ? 0 : 1;    // no logo definition found is success
-      MultLogoFree( &logodata );
+    DetectionResult detection = detect_logo(
+        &logodata, *source, seek, end, inf.height, nodisp);
+    if (detection.setup_error != 0) {
+      retval = detection.setup_error == 3 ? 0 : 1;
+      MultLogoFree(&logodata);
       return retval;
     }
 
-    // display parameter
-    if (nodisp == 0 && logodata.paramoff == 0){   // for LOGO
-      MultLogoDisplayParam( &logodata );        // for LOGO
-    }
-    if (nodisp == 0){
-      fprintf(stderr, "Total logodata : %d\n", logodata.num_deflogo);  // for LOGO
-    }
+    if (!managed_logo.channel.empty()) {
+      fprintf(
+          stderr,
+          "managed logo: v%04d match=%.2f%% threshold=%d%%\n",
+          managed_logo_version,
+          detection.match_ratio * 100.0,
+          managed_logo.match_threshold_percent);
+      if (loaded_existing_logo &&
+          detection.match_ratio * 100.0 <
+              managed_logo.match_threshold_percent) {
+        const std::string previous_logo_path = managed_logo_path;
+        const int previous_logo_version = managed_logo_version;
+        const double previous_match_ratio = detection.match_ratio;
+        int candidate_version = 0;
+        const std::string candidate_path =
+            logo_repository->next_path(&candidate_version);
+        fprintf(
+            stderr,
+            "managed logo: match is low; generating and retrying v%04d\n",
+            candidate_version);
+        DetectionResult candidate_detection;
+        bool candidate_analyzed = false;
+        try {
+          generate_logo(
+              *source,
+              managed_logo,
+              seek,
+              end,
+              candidate_path);
+          if (reload_logo_options(
+                  &logodata,
+                  argc,
+                  argv,
+                  candidate_path) != 0) {
+            throw std::runtime_error(
+                "Could not reload options for the generated logo");
+          }
+          candidate_detection = detect_logo(
+              &logodata, *source, seek, end, inf.height, nodisp);
+          if (candidate_detection.setup_error != 0) {
+            throw std::runtime_error(
+                "Could not analyze the regenerated logo");
+          }
+          candidate_analyzed = true;
+          fprintf(
+              stderr,
+              "managed logo: v%04d retry match=%.2f%%\n",
+              candidate_version,
+              candidate_detection.match_ratio * 100.0);
+        } catch (const std::exception &error) {
+          fprintf(
+              stderr,
+              "managed logo: v%04d generation/retry failed: %s\n",
+              candidate_version,
+              error.what());
+        }
 
-    // read framedata
-    if (nodisp == 0){
-      fprintf(stderr, "checking %6d/%d start.\n", seek, end-1);
-    }
-    for(int frm = seek; frm < end; ++frm) {
-      InputVideoFrame frame = source->read_frame(frm);
-
-      // Existing logo detection receives the same luma-plane interface.
-      MultLogoCalc( &logodata, frame.data, frame.pitch, frm, height );
-
-      if (nodisp == 0){
-        if (((frm % 5000 == 0) && (frm != 0)) ||
-            (frm == 100) ||
-            (frm == 1000)){
-          fprintf(stderr, "checking %6d/%d ended.\n", frm, end-1);
+        // 新しい候補で一致率が改善した場合だけ最新版に昇格する。
+        if (candidate_analyzed &&
+            candidate_detection.match_ratio >
+                previous_match_ratio + 0.001) {
+          logo_repository->set_latest(
+              candidate_path, candidate_version);
+          managed_logo_path = candidate_path;
+          managed_logo_version = candidate_version;
+          detection = candidate_detection;
+          fprintf(
+              stderr,
+              "managed logo: promoted v%04d as latest\n",
+              managed_logo_version);
+        } else {
+          logo_repository->set_latest(
+              previous_logo_path, previous_logo_version);
+          if (candidate_analyzed) {
+            fprintf(
+                stderr,
+                "managed logo: v%04d did not improve the match; "
+                "keeping v%04d as latest\n",
+                candidate_version,
+                previous_logo_version);
+          } else {
+            fprintf(
+                stderr,
+                "managed logo: keeping v%04d as latest\n",
+                previous_logo_version);
+          }
+          if (reload_logo_options(
+                  &logodata,
+                  argc,
+                  argv,
+                  previous_logo_path) != 0) {
+            throw std::runtime_error(
+                "Could not restore options for the previous logo");
+          }
+          detection = detect_logo(
+              &logodata, *source, seek, end, inf.height, nodisp);
+          if (detection.setup_error != 0) {
+            throw std::runtime_error(
+                "Could not restore analysis with the previous logo");
+          }
+          managed_logo_path = previous_logo_path;
+          managed_logo_version = previous_logo_version;
         }
       }
     }
-    if (nodisp == 0){
-      fprintf(stderr, "checking %6d/%d ended.\n", end-1, end-1);
-    }
-
-    // find logo-on frames
-    MultLogoFind( &logodata );     // for LOGO
 
     // output result
-    MultLogoWrite( &logodata );    // for LOGO
+    MultLogoWrite(&logodata);
 
     //--------------- end logoframe ---------------
     retval = 0;

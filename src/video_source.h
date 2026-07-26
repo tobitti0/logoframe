@@ -725,6 +725,8 @@ public:
   const char *source_name() const { return "FFmpegSource"; }
 };
 
+#include "dtvindex_video_source.h"
+
 inline std::unique_ptr<VideoSource> open_video_source(
     const char *infile, int csp) {
   if (input_has_extension(infile, ".avs")) {
@@ -732,7 +734,7 @@ inline std::unique_ptr<VideoSource> open_video_source(
         new AvsVideoSource(infile, csp));
   }
   return std::unique_ptr<VideoSource>(
-      new FFmpegVideoSource(infile, csp));
+      new DtvIndexVideoSource(infile, csp));
 }
 
 #endif

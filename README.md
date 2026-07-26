@@ -21,12 +21,43 @@ ChapterEXEおよびJoinLogoScpまで組み合わせた最終Trimも、放送TS 5
 この数値はMPEG-2放送TSに対する互換性の目安であり、異なるコーデック、破損状態、タイムスタンプ構成で同じ結果を保証するものではない。  
 
 ## 使用方法
-`logoframe`と`dtvindex`を同じ親ディレクトリへ配置し、AviSynth+とFFmpegの  
-開発用ライブラリを導入の上、srcフォルダで`make`を実行するとビルドできる。  
-FFmpeg開発ライブラリで必要なものは次のとおり。  
+
+`src`で`make`を実行すると、利用可能な入力機能を自動検出してビルドする。
+
+```console
+make
+```
+
+AviSynth入力は`avisynth.h`が見つかった場合に有効になる。dtvindex入力は
+次の順序で検出する。
+
+1. `DTVINDEX_DIR`で指定したソースツリー
+2. `src/libdtvindex.a`と`src/include/dtvindex/dtvindex.hpp`
+3. `pkg-config`で検出できるインストール済みdtvindex
+4. `logoframe`と同じ親ディレクトリにあるdtvindexソースツリー
+
+dtvindex入力に必要なFFmpeg開発ライブラリは次のとおり。
+
 ```
 libavformat-dev libavcodec-dev libavutil-dev libswscale-dev
 ```
+
+AviSynthヘッダーが標準以外の場所にある場合は`AVISYNTH_CFLAGS`を
+指定できる。入力機能は明示的に有効化または無効化できる。
+
+```console
+make WITH_AVISYNTH=yes WITH_DTVINDEX=no
+make WITH_AVISYNTH=no WITH_DTVINDEX=yes
+make AVISYNTH_CFLAGS=-I/path/to/avisynth
+make DTVINDEX_DIR=/path/to/dtvindex
+```
+
+起動時には、ビルドで有効になった入力機能を表示する。
+
+```text
+logoframe 1.20: AviSynth=enabled, dtvindex=enabled
+```
+
 実行方法は次のとおり。  
 ````
 logoframe 動画またはAVSファイル名 -logo ロゴファイル名 -oa 出力ファイル名 他オプション

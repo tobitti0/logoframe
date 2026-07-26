@@ -62,10 +62,16 @@ static int csp_to_int(const char *arg)
   return 0;
 }
 
+#if HAVE_AVISYNTH
 const AVS_Linkage *AVS_linkage = nullptr;
+#endif
 
 int main(int argc, const char* argv[])
 {
+  fprintf(stderr, MY_VERSION ": AviSynth=%s, dtvindex=%s\n",
+      HAVE_AVISYNTH ? "enabled" : "disabled",
+      HAVE_DTVINDEX ? "enabled" : "disabled");
+
   const char* infile   = NULL;
   int err_count = 0;
   int errforce = 0;

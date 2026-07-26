@@ -1,6 +1,13 @@
 #ifndef LOGOFRAME_VIDEO_SOURCE_H
 #define LOGOFRAME_VIDEO_SOURCE_H
 
+#ifndef HAVE_AVISYNTH
+#define HAVE_AVISYNTH 1
+#endif
+#ifndef HAVE_DTVINDEX
+#define HAVE_DTVINDEX 1
+#endif
+
 #include <algorithm>
 #include <climits>
 #include <cstddef>
@@ -11,9 +18,12 @@
 #include <string>
 #include <vector>
 
+#if HAVE_AVISYNTH
 #include <avisynth.h>
 #include <dlfcn.h>
+#endif
 
+#if HAVE_DTVINDEX
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -23,6 +33,7 @@ extern "C" {
 #include <libavutil/pixdesc.h>
 #include <libswscale/swscale.h>
 }
+#endif
 
 enum InputColorSpace {
   CSP_I420 = 1,
@@ -73,6 +84,7 @@ inline const char *input_csp_name(int csp) {
   }
 }
 
+#if HAVE_AVISYNTH
 class AvsVideoSource : public VideoSource {
 private:
   void *_library;
@@ -224,7 +236,9 @@ public:
 
   const char *source_name() const { return "AvsSource"; }
 };
+#endif
 
+#if HAVE_DTVINDEX
 class FFmpegVideoSource : public VideoSource {
 private:
   AVFormatContext *_format_context;
@@ -726,15 +740,26 @@ public:
 };
 
 #include "dtvindex_video_source.h"
+#endif
 
 inline std::unique_ptr<VideoSource> open_video_source(
     const char *infile, int csp) {
   if (input_has_extension(infile, ".avs")) {
+#if HAVE_AVISYNTH
     return std::unique_ptr<VideoSource>(
         new AvsVideoSource(infile, csp));
+#else
+    throw std::runtime_error(
+        "AviSynth input is not enabled in this build");
+#endif
   }
+#if HAVE_DTVINDEX
   return std::unique_ptr<VideoSource>(
       new DtvIndexVideoSource(infile, csp));
+#else
+  throw std::runtime_error(
+      "dtvindex input is not enabled in this build");
+#endif
 }
 
 #endif

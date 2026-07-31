@@ -859,7 +859,7 @@ void LogoRepository::set_latest(
   const std::string manifest = join_path(
       directory_, manifest_file_name(channel_key_));
   const std::string temporary = manifest + ".tmp";
-  FILE *file = fopen(temporary.c_str(), "w");
+  FILE *file = fopen(temporary.c_str(), "wb");
   if (file == NULL) {
     throw std::runtime_error(
         std::string("Could not create logo manifest: ") + temporary);

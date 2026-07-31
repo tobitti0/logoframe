@@ -51,7 +51,7 @@ extern int  LogoResultAdd(LOGO_RESULTOUTREC *prs, LOGO_DATASET *pl, int autosel)
 //---------------------------------------------------------------------
 // Shift-JISの２バイト文字チェック
 //---------------------------------------------------------------------
-int sjis_multibyte(char *str){
+int sjis_multibyte(const char *str){
 	unsigned char code;
 
 	code = (unsigned char)*str;
@@ -69,8 +69,8 @@ int sjis_multibyte(char *str){
 //---------------------------------------------------------------------
 // Shift-JISコード考慮のstrrchr
 //---------------------------------------------------------------------
-char *strrchrj(char *str, char ch){
-	char *dst;
+const char *strrchrj(const char *str, char ch){
+	const char *dst;
 
 	dst = NULL;
 	if (str != NULL){
@@ -85,6 +85,10 @@ char *strrchrj(char *str, char ch){
 		}
 	}
 	return dst;
+}
+
+char *strrchrj(char *str, char ch){
+	return const_cast<char *>(strrchrj(static_cast<const char *>(str), ch));
 }
 //---------------------------------------------------------------------
 // Shift-JISコード考慮のstrchr
@@ -143,7 +147,7 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
   struct stat st;
 #endif
 	char *strtmp;
-	char *strext;
+	const char *strext;
 	char *newstr;      // for serach (add asterisk from filename_src)
 	char *newstr2;     // for folder (extract folder from filename_src)
 	int n, endf, nlen, nlen2;
@@ -273,7 +277,7 @@ int MultLogo_FileListGet(char *baselist[], const char *filename_src)
 #ifdef _WIN32
 					if ( !FindNextFile( hFile, &FindFileData ) ){
 #else
-          if ( n+1 == globbuf.gl_pathc ){
+          if ( static_cast<size_t>(n + 1) == globbuf.gl_pathc ){
 #endif
 						endf = 1;
 					}
@@ -309,6 +313,7 @@ int MultLogo_FileStrGet(char** name_dst, const char* name_src)
 {
 	char* newstr;
 	char* tmpstr;
+	const char* srcstr;
 	int nlen;
 	int pos, wlen, flag;
 
@@ -332,10 +337,10 @@ int MultLogo_FileStrGet(char** name_dst, const char* name_src)
 	}
 	*name_dst = newstr;
 
-	tmpstr = strchr(name_src, '\"');
-	if (tmpstr != NULL){                 // if double quotes found
-		tmpstr += 1;                     // move inside of the double quotes
-		strcpy(newstr, tmpstr);
+	srcstr = strchr(name_src, '\"');
+	if (srcstr != NULL){                 // if double quotes found
+		srcstr += 1;                     // move inside of the double quotes
+		strcpy(newstr, srcstr);
 		tmpstr = strchr(newstr, '\"');   // next double quotes
 		if (tmpstr != NULL){
 			strcpy(tmpstr, "");          // delete after the double quotes
@@ -1032,7 +1037,7 @@ int MultLogoSetup_ParamRead_File(MLOGO_THRESREC *pmt, const char* fname, int dis
 		}
 		fclose(fpr);
 		if (dispoff == 0){
-	        printf("info:read parameter from '%s'\n", fname);
+	        fprintf(stderr, "info:read parameter from '%s'\n", fname);
 	    }
 	}
 	return 0;
@@ -1204,7 +1209,7 @@ int MultLogoSetup_FileAna2Open(MLOGO_DATASET* pml){
 					else{						// ロゴが２つ以上なら名前に番号を追加
 						sprintf(newstr, "%s_%d%s", newstr1, i+1, newstr2);
 					}
-					pml->fpo_ana2[i] = fopen(newstr, "w");
+					pml->fpo_ana2[i] = fopen(newstr, "wb");
 					if (!pml->fpo_ana2[i]){
 						fprintf(stderr, "error: failed to create/open '%s'\n", newstr);
 						ret = 1;
@@ -1286,9 +1291,9 @@ void MultLogoDisplayParam(MLOGO_DATASET* pml){
 				strcpy(str_offwidth, "");
 			}
 			// display
-			printf("logo%d:%s\n", i+1, pml->all_logofilename[i]);
+			fprintf(stderr, "logo%d:%s\n", i+1, pml->all_logofilename[i]);
 #ifdef DEBUG_PRINT
-			printf("logo%d:loc(%d,%d) %dx%d Edge:%ld(%d) Sum:(%ld,%ld)-(%ld,%ld)%ld/%ld(%d/%d)\n",
+			fprintf(stderr, "logo%d:loc(%d,%d) %dx%d Edge:%ld(%d) Sum:(%ld,%ld)-(%ld,%ld)%ld/%ld(%d/%d)\n",
 				i+1,
 				plogo->paramdat.yx, plogo->paramdat.yy,
 				plogo->paramdat.yw, plogo->paramdat.yh,
@@ -1300,13 +1305,13 @@ void MultLogoDisplayParam(MLOGO_DATASET* pml){
 #endif
 
 			if (plogo->thresdat.auto_bs11 == 2){
-				printf("detect:BS11\n");
+				fprintf(stderr, "detect:BS11\n");
 			}
-			printf("params fadein:%d fadeout:%d mrgleft:%d mrgright:%d %s\n", 
+			fprintf(stderr, "params fadein:%d fadeout:%d mrgleft:%d mrgright:%d %s\n",
 				plogo->thresdat.num_fadein,  plogo->thresdat.num_fadeout,
 				plogo->thresdat.num_cutleft, plogo->thresdat.num_cutright,
 				str_autofade );
-			printf("       onwidth:%d%s onlevel:%d Y:%d-%d Yedge:%d Ydif:%d Yoffedg:%d\n",
+			fprintf(stderr, "       onwidth:%d%s onlevel:%d Y:%d-%d Yedge:%d Ydif:%d Yoffedg:%d\n",
 				plogo->thresdat.num_onwidth, str_offwidth,
 				plogo->thresdat.num_onlevel,
 				plogo->thresdat.thres_ymin, plogo->thresdat.thres_ymax,
@@ -1510,7 +1515,7 @@ int MultLogoWrite_OutputAvs(MLOGO_DATASET* pml){
 	// open files
 	fpout = NULL;
 	if (pml->opt_outfile != NULL){
-		fpout = fopen(pml->opt_outfile, "w");
+		fpout = fopen(pml->opt_outfile, "wb");
 		if (!fpout){
 			fprintf(stderr, "error: failed to create/open '%s'\n", pml->opt_outfile);
 			return 1;
@@ -1621,7 +1626,7 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 			if ((pml->oamask & 8) == 0){
 				// 出力するファイル名を newstr に代入（必要文字数mallocで事前確保）
 				sprintf(newstr, "%s_list.ini", newstr1);
-				fpo_list = fopen(newstr, "w");
+				fpo_list = fopen(newstr, "wb");
 				if (!fpo_list){
 					fprintf(stderr, "error: failed to create/open '%s'\n", newstr);
 					ret = 1;
@@ -1665,7 +1670,7 @@ int MultLogoWrite_OutputAnaEach(MLOGO_DATASET* pml){
 				if (plogo != NULL && nid > 0){
 					// 出力するファイル名を newstr に代入（必要文字数mallocで事前確保）
 					sprintf(newstr, "%s_%s%d%s", newstr1, stradd, nid, newstr2);
-					fpo_ana = fopen(newstr, "w");
+					fpo_ana = fopen(newstr, "wb");
 					if (!fpo_ana){
 						fprintf(stderr, "error: failed to create/open '%s'\n", newstr);
 						ret = 1;
@@ -1708,7 +1713,7 @@ int MultLogoWrite_OutputAnaTotal(MLOGO_DATASET* pml){
 	// output frame result ("-oa" option)
 	anafile = pml->opt_anafile;
 	if (anafile != NULL){
-		fpo_ana = fopen(anafile, "w");
+		fpo_ana = fopen(anafile, "wb");
 		if (!fpo_ana){
 			fprintf(stderr, "error: failed to create/open '%s'\n", anafile);
 			return 1;

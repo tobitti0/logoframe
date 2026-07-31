@@ -2040,7 +2040,7 @@ int LogoCalc_summary(LOGO_CALCREC *plogoc, LOGO_PARAMREC *plogop){
 	short rate_logoon_cntf;
 	short rate_logoon;
 	short rate_fade;
-	int n_hist_max;
+	int n_hist_max = LOGO_FADE_OFST;
 	int i;
 	int invalid_logooff, cnttmp1, cnttmp2, cnttmpsum;
 
@@ -3134,7 +3134,7 @@ void LogoFind_fine(LOGO_FRAMEREC *plogof){
 		loc_cand = LogoFind_fine_getloc(&loc_short, &loc_long, plogof, loc_ed, loc_st);
 #ifdef DEBUG_PRINT_DET
 		if (plogof->res[i].frm_rise != loc_cand){  // only debug
-			printf("find-fine %ld > %ld\n", plogof->res[i].frm_rise, loc_cand);
+			fprintf(stderr, "find-fine %ld > %ld\n", plogof->res[i].frm_rise, loc_cand);
 		}
 #endif
 		plogof->res[i].frm_rise = loc_cand;
@@ -3150,7 +3150,7 @@ void LogoFind_fine(LOGO_FRAMEREC *plogof){
 		loc_cand = LogoFind_fine_getloc(&loc_short, &loc_long, plogof, loc_st, loc_ed);
 #ifdef DEBUG_PRINT_DET
 		if (plogof->res[i].frm_fall != loc_cand){  // only debug
-			printf("find-fine %ld > %ld\n", plogof->res[i].frm_fall, loc_cand);
+			fprintf(stderr, "find-fine %ld > %ld\n", plogof->res[i].frm_fall, loc_cand);
 		}
 #endif
 		plogof->res[i].frm_fall = loc_cand;
@@ -3605,7 +3605,7 @@ void LogoFind_fade(LOGO_FRAMEREC *plogof, LOGO_THRESREC *plogot){
 			total_fade ++;
 #ifdef DEBUG_PRINT_DET
 			if (plogof->res[i].frm_rise != loc_newrise){  // only debug
-				printf("find-fade %ld > %ld\n", plogof->res[i].frm_rise, loc_newrise);
+				fprintf(stderr, "find-fade %ld > %ld\n", plogof->res[i].frm_rise, loc_newrise);
 			}
 #endif
 		}
@@ -3648,7 +3648,7 @@ void LogoFind_fade(LOGO_FRAMEREC *plogof, LOGO_THRESREC *plogot){
 			total_fade ++;
 #ifdef DEBUG_PRINT_DET
 			if (plogof->res[i].frm_fall != loc_newfall){  // only debug
-				printf("find-fade %ld > %ld\n", plogof->res[i].frm_fall, loc_newfall);
+				fprintf(stderr, "find-fade %ld > %ld\n", plogof->res[i].frm_fall, loc_newfall);
 			}
 #endif
 		}

@@ -1,13 +1,14 @@
-# 透過ロゴ表示区間検出 logoframe for AviSynth+ and FFmpeg
+# 透過ロゴ表示区間検出 logoframe for AviSynth+ and dtvindex
 
 ## 概要
 
 AviSynth+はVer3.5.0からNative Linuxをサポートした。  
-これは[sogaani氏][1]がLinuxに移植された[logoframe][2]をAviSynth+3.5.xで動作するように改造したものである。  
+これは[sogaani氏][1]がLinuxに移植された[logoframe][2]をAviSynth+3.5.xで動作するように改造し、Windows版のAviSynth入力にも対応したものである。
 
-また、従来のAVS入力に加え、FFmpegが対応する動画ファイルを直接入力できる。  
-動画直接入力では、[dtvindex][3]が作成する共通フレーム番号を使用する。
-ロゴ検出処理は変更せず、どちらの入力方式も同じ輝度面を既存処理へ渡す。  
+また、従来のAVS入力に加え、FFmpegが対応する動画ファイルを
+[dtvindex][3]経由で入力できる。dtvindexがFFmpegで映像をデコードし、
+作成した共通フレーム番号を使用する。ロゴ検出処理は変更せず、
+AviSynth入力とdtvindex入力のどちらも同じ輝度面を既存処理へ渡す。
 
 LGDを用意していないチャンネルでは、チャンネル名を指定して検出用LGDを自動生成できる。
 作成したLGDはチャンネルごとに世代管理し、通常は最新世代を使用する。動画に対する一致率が指定値を下回った場合は、新しい世代を生成して解析を再試行する。
@@ -15,15 +16,6 @@ LGDを用意していないチャンネルでは、チャンネル名を指定�
 [1]:https://github.com/sogaani
 [2]:https://github.com/sogaani/JoinLogoScp/tree/master/logoframe
 [3]:https://github.com/tobitti0/dtvindex
-
-## FFmpeg機能のAviSynth+入力との互換性
-
-FFmpeg直接入力とdtvindex入力は、ロゴ検出ロジックを変更せず、入力部分だけを拡張している。
-
-MPEG-2放送TS 3本の全フレームをAviSynth+／L-SMASH Works入力と比較した場合、ロゴ表示区間の出力は3本すべてでバイト単位に一致した。  
-ChapterEXEおよびJoinLogoScpまで組み合わせた最終Trimも、放送TS 5本すべてでAviSynth+入力と同一になった。  
-
-この数値はMPEG-2放送TSに対する互換性の目安であり、異なるコーデック、破損状態、タイムスタンプ構成で同じ結果を保証するものではない。  
 
 ## 使用方法
 
@@ -33,35 +25,56 @@ ChapterEXEおよびJoinLogoScpまで組み合わせた最終Trimも、放送TS 5
 make
 ```
 
-AviSynth入力は`avisynth.h`が見つかった場合に有効になる。dtvindex入力は
-次の順序で検出する。
+AviSynth入力に必要なC APIヘッダーと動的ロード処理はソースツリーに同梱している。
+ビルド時にAviSynthの開発用ヘッダーやライブラリは不要で、実行時にWindowsでは
+`avisynth.dll`、LinuxではAviSynth+の共有ライブラリを読み込む。
+dtvindex経由の動画ファイル入力は次の順序で検出する。
 
 1. `DTVINDEX_DIR`で指定したソースツリー
 2. `src/libdtvindex.a`と`src/include/dtvindex/dtvindex.hpp`
 3. `pkg-config`で検出できるインストール済みdtvindex
 4. `logoframe`と同じ親ディレクトリにあるdtvindexソースツリー
 
-dtvindex入力に必要なFFmpeg開発ライブラリは次のとおり。
+dtvindex経由の動画ファイル入力に必要なFFmpeg開発ライブラリは次のとおり。
 
 ```
 libavformat-dev libavcodec-dev libavutil-dev libswscale-dev
 ```
 
-AviSynthヘッダーが標準以外の場所にある場合は`AVISYNTH_CFLAGS`を
-指定できる。入力機能は明示的に有効化または無効化できる。
+入力機能は明示的に有効化または無効化できる。
 
 ```console
 make WITH_AVISYNTH=yes WITH_DTVINDEX=no
 make WITH_AVISYNTH=no WITH_DTVINDEX=yes
-make AVISYNTH_CFLAGS=-I/path/to/avisynth
 make DTVINDEX_DIR=/path/to/dtvindex
 ```
+
+### Windows版のビルド
+
+64 bit版MinGW-w64、`mingw32-make`、Windows向けに静的ビルドした
+FFmpegの開発ファイルを用意し、その`pkg-config`定義を検索できる状態で
+`src`ディレクトリから次を実行する。
+
+```bat
+compile.cmd
+```
+
+このコマンドは64 bit Windows向けの`logoframe.exe`を作成する。MinGWの
+ランタイム、FFmpeg、dtvindexは静的リンクされるため、実行時に別途必要に
+なるのはWindowsのシステムDLLと、AVS入力時のAviSynth+だけである。
+AviSynth+は64 bit版をインストールするか、`AviSynth.dll`を
+`logoframe.exe`と同じディレクトリへ配置する。
 
 起動時には、ビルドで有効になった入力機能を表示する。
 
 ```text
-logoframe 1.21: AviSynth=enabled, dtvindex=enabled
+logoframe 1.21
+  Input : AviSynth=enabled, dtvindex=enabled
 ```
+
+ヘッダー、入力情報、進捗、警告、エラーは標準エラー出力へ表示する。
+通常実行時は標準出力を使用せず、解析結果は`-oa`、`-oa2`、`-o`などで
+指定したファイルへ出力する。Linux版とWindows版でこの動作は共通である。
 
 実行方法は次のとおり。  
 
@@ -69,9 +82,10 @@ logoframe 1.21: AviSynth=enabled, dtvindex=enabled
 logoframe 動画またはAVSファイル名 -logo ロゴファイル名 -oa 出力ファイル名 他オプション
 ```
 
-`.avs`は従来どおりAviSynth+で、それ以外の入力はdtvindexを経由してFFmpegで読み込む。  
-FFmpegでの動画ファイルの初回読み込み時には同じ場所へ`.dtvi`を作成し、2回目以降は  
-元ファイルとの整合性を検証して再利用する。  
+`.avs`は従来どおりAviSynth+で読み込み、それ以外はdtvindex経由の
+動画ファイル入力となる。dtvindexはFFmpegで映像をデコードする。
+動画ファイルの初回読み込み時には同じ場所へ`.dtvi`を作成し、2回目以降は
+元ファイルとの整合性を検証して再利用する。
 
 ```console
 logoframe input.ts -logo logo.lgd -oa output.txt
@@ -120,12 +134,6 @@ logo/
 
 自動生成するLGDはLogoframeの区間検出に必要な輝度情報を収録する。色差情報は収録しないため、透過ロゴ除去用の完全なLGDとしては使用できない。
 
-### 自動生成LGDの精度と処理時間の目安
-
-MPEG-2放送TS 5本について、自動生成したLGDと既存LGDの検出結果を比較した。全40境界のうち、出力行全体では37境界が一致し、主要な境界フレームは38境界が一致した。残る2境界も既存LGDとの差は1フレームだった。
-
-同じDocker環境で既存のインデックスを再利用した場合、自動生成を含む処理時間は既存LGDを指定した場合と比べて平均約6.3秒（約14.5%）増加した。これらは使用した映像に対する参考値であり、放送局ロゴの表示時間、背景の変化量、映像形式などによって結果は変わる。
-
 その他logoframe自体の詳細はオリジナルの[readme][4]を参照してください。
 
 [4]:https://github.com/tobitti0/logoframe/blob/master/readme.txt
@@ -135,7 +143,7 @@ MPEG-2放送TS 5本について、自動生成したLGDと既存LGDの検出結�
 - オリジナルのlogoframeおよびロゴ検出処理: [Yobi氏][5]
 - Linux／AviSynth対応: [sogaani氏][1]
 - LGD生成の背景選別、画素回帰およびLGD形式: [MakKi氏のロゴ解析プラグイン][6]
-- AviSynth+対応、FFmpeg直接入力、dtvindex連携などの拡張: tobitti0
+- AviSynth+対応、dtvindex経由の動画ファイル入力などの拡張: tobitti0
 
 [5]:https://github.com/yobibi
 [6]:https://github.com/makiuchi-d/delogo-aviutl

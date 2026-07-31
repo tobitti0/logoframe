@@ -2,16 +2,12 @@ PROGRAM := logoframe
 OBJS := logoframe.o logo_generator.o logoframe_det.o logoframe_mul.o
 
 CXX ?= g++
+AR ?= ar
 PKG_CONFIG ?= pkg-config
+PKG_CONFIG_LIBS ?= --libs
 
 WITH_AVISYNTH ?= auto
 WITH_DTVINDEX ?= auto
-AVISYNTH_CFLAGS ?= $(shell \
-	if test -f /usr/local/include/avisynth/avisynth.h; then \
-		printf '%s' '-I/usr/local/include/avisynth'; \
-	elif test -f /usr/include/avisynth/avisynth.h; then \
-		printf '%s' '-I/usr/include/avisynth'; \
-	fi)
 DTVINDEX_DIR ?=
 
 FFMPEG_PACKAGES := libavformat libavcodec libavutil libswscale
@@ -24,17 +20,17 @@ ifeq ($(filter $(WITH_DTVINDEX),$(VALID_FEATURE_VALUES)),)
   $(error WITH_DTVINDEX must be auto, yes, or no)
 endif
 
-CPPFLAGS := -I.
-CXXFLAGS := -O3 -x c++ -ffast-math -Wall -Wshadow -fpermissive \
+CPPFLAGS := -I. -I../extras
+CXXFLAGS := -O3 -x c++ -ffast-math -Wall -Wshadow \
 	-Wempty-body -std=gnu++11 -fomit-frame-pointer \
 	-fno-tree-vectorize -fno-zero-initialized-in-bss
-LDLIBS := -ldl -pthread
+LDFLAGS :=
+LDLIBS := -pthread
 DTVINDEX_DEPS :=
 
-AVISYNTH_FOUND := $(shell \
-	printf '%s\n' '\#include <avisynth.h>' | \
-	$(CXX) $(AVISYNTH_CFLAGS) -x c++ -E - >/dev/null 2>&1 \
-	&& echo yes || echo no)
+AVISYNTH_FOUND := $(strip $(if \
+	$(and $(wildcard ../avisynth/avs_internal.c),\
+		$(wildcard ../extras/avisynth_c.h)),yes,no))
 ifeq ($(WITH_AVISYNTH),auto)
   ENABLE_AVISYNTH := $(AVISYNTH_FOUND)
 else
@@ -42,16 +38,20 @@ else
 endif
 ifeq ($(ENABLE_AVISYNTH),yes)
   ifneq ($(AVISYNTH_FOUND),yes)
-    $(error WITH_AVISYNTH=yes, but avisynth.h was not found)
+    $(error WITH_AVISYNTH=yes, but the bundled AviSynth C API files were not found)
   endif
-  CPPFLAGS += -DHAVE_AVISYNTH=1 $(AVISYNTH_CFLAGS)
+  CPPFLAGS += -DHAVE_AVISYNTH=1 -I../avisynth
 else
   CPPFLAGS += -DHAVE_AVISYNTH=0
 endif
 
-PKG_CONFIG_FOUND := $(strip $(shell \
-	command -v "$(PKG_CONFIG)" >/dev/null 2>&1 \
+ifeq ($(WITH_DTVINDEX),no)
+  PKG_CONFIG_FOUND := no
+else
+  PKG_CONFIG_FOUND := $(strip $(shell \
+	$(PKG_CONFIG) --version >/dev/null 2>&1 \
 	&& echo yes || echo no))
+endif
 DTVINDEX_PKG_FOUND := $(strip $(if $(filter yes,$(PKG_CONFIG_FOUND)),\
 	$(shell $(PKG_CONFIG) --exists dtvindex \
 		&& echo yes || echo no),no))
@@ -108,19 +108,19 @@ ifeq ($(ENABLE_DTVINDEX),yes)
 
   ifeq ($(DTVINDEX_MODE),pkg-config)
     CPPFLAGS += $(shell $(PKG_CONFIG) --cflags dtvindex)
-    LDLIBS += $(shell $(PKG_CONFIG) --libs dtvindex)
+    LDLIBS += $(shell $(PKG_CONFIG) $(PKG_CONFIG_LIBS) dtvindex)
   else ifeq ($(DTVINDEX_MODE),local)
     CPPFLAGS += -I$(LOCAL_DTVINDEX_INCLUDE) \
 		$(shell $(PKG_CONFIG) --cflags $(FFMPEG_PACKAGES))
     LDLIBS += $(LOCAL_DTVINDEX_LIBRARY) \
-		$(shell $(PKG_CONFIG) --libs $(FFMPEG_PACKAGES))
+		$(shell $(PKG_CONFIG) $(PKG_CONFIG_LIBS) $(FFMPEG_PACKAGES))
     DTVINDEX_DEPS += $(LOCAL_DTVINDEX_LIBRARY)
   else ifeq ($(DTVINDEX_MODE),source)
     DTVINDEX_LIBRARY := $(DTVINDEX_SOURCE_DIR)/build/libdtvindex.a
     CPPFLAGS += -I$(DTVINDEX_SOURCE_DIR)/include \
 		$(shell $(PKG_CONFIG) --cflags $(FFMPEG_PACKAGES))
     LDLIBS += $(DTVINDEX_LIBRARY) \
-		$(shell $(PKG_CONFIG) --libs $(FFMPEG_PACKAGES))
+		$(shell $(PKG_CONFIG) $(PKG_CONFIG_LIBS) $(FFMPEG_PACKAGES))
     DTVINDEX_DEPS += $(DTVINDEX_LIBRARY)
   endif
 else
@@ -135,6 +135,13 @@ endif
 
 ifeq ($(OS),Windows_NT)
   PROGRAM := $(PROGRAM).exe
+  CXXFLAGS += -finput-charset=UTF-8 -fexec-charset=CP932
+  LDFLAGS += -static -static-libgcc -static-libstdc++
+else
+  UNAME_SYSTEM := $(shell uname -s)
+  ifeq ($(UNAME_SYSTEM),Linux)
+    LDLIBS += -ldl
+  endif
 endif
 
 $(info Logoframe input support: AviSynth=$(ENABLE_AVISYNTH) dtvindex=$(ENABLE_DTVINDEX)$(if $(filter yes,$(ENABLE_DTVINDEX)),$(if $(DTVINDEX_MODE), ($(DTVINDEX_MODE)))))
@@ -146,14 +153,22 @@ $(info Logoframe input support: AviSynth=$(ENABLE_AVISYNTH) dtvindex=$(ENABLE_DT
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS) $(DTVINDEX_DEPS)
-	$(CXX) -o $@ $(OBJS) $(LDLIBS)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 ifeq ($(DTVINDEX_MODE),source)
 $(DTVINDEX_LIBRARY):
-	$(MAKE) -C "$(DTVINDEX_SOURCE_DIR)" build/libdtvindex.a
+	$(MAKE) -C "$(DTVINDEX_SOURCE_DIR)" build/libdtvindex.a \
+		CXX="$(CXX)" \
+		AR="$(AR)" \
+		OS="$(OS)" \
+		PKG_CONFIG="$(PKG_CONFIG)" \
+		PKG_CONFIG_LIBS="$(PKG_CONFIG_LIBS)"
 endif
 
 logoframe.o: video_source.h logo_generator.h
+ifeq ($(ENABLE_AVISYNTH),yes)
+logoframe.o: ../avisynth/avs_internal.c ../extras/avisynth_c.h
+endif
 ifeq ($(ENABLE_DTVINDEX),yes)
 logoframe.o: dtvindex_video_source.h
 endif

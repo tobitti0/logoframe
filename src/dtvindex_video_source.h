@@ -3,6 +3,10 @@
 
 #include "dtvindex/dtvindex.hpp"
 
+extern "C" {
+#include <libavcodec/avcodec.h>
+}
+
 #include <algorithm>
 #include <climits>
 #include <cstdio>

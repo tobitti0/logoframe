@@ -1,1 +1,2 @@
-gcc logoframe.c logoframe_det.c logoframe_mul.c -o logoframe.exe -O3 -ffast-math -Wall -Wshadow -Wempty-body -I. -std=gnu99 -fomit-frame-pointer -s -fno-tree-vectorize -fno-zero-initialized-in-bss
+@echo off
+mingw32-make clean all OS=Windows_NT WITH_AVISYNTH=yes WITH_DTVINDEX=yes PKG_CONFIG_LIBS="--static --libs"

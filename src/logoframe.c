@@ -252,24 +252,23 @@ static DetectionResult detect_logo(
 
 static int csp_to_int(const char *arg)
 {
-  if(!strcasecmp(arg, "i420"))
+  if(!stricmp(arg, "i420"))
     return CSP_I420;
-  if(!strcasecmp(arg, "i422"))
+  if(!stricmp(arg, "i422"))
     return CSP_I422;
-  if(!strcasecmp(arg, "i444"))
+  if(!stricmp(arg, "i444"))
     return CSP_I444;
   return 0;
 }
 
-#if HAVE_AVISYNTH
-const AVS_Linkage *AVS_linkage = nullptr;
-#endif
-
 int main(int argc, const char* argv[])
 {
-  fprintf(stderr, MY_VERSION ": AviSynth=%s, dtvindex=%s\n",
+  fprintf(stderr,
+      MY_VERSION "\n"
+      "  Input : AviSynth=%s, dtvindex=%s\n\n",
       HAVE_AVISYNTH ? "enabled" : "disabled",
       HAVE_DTVINDEX ? "enabled" : "disabled");
+  fflush(stderr);
 
   const char* infile   = NULL;
   int err_count = 0;
@@ -456,7 +455,7 @@ int main(int argc, const char* argv[])
   }
 
   if(usage || !infile){
-    fprintf(stderr, MY_VERSION "\n"
+    fprintf(stderr,
         "Usage: logoframe [options] input_video_or_avs [-logo data.lgd | -channel name] [-oa outa.txt] [-o out.avs]\n"
         "Managed logo options:\n"
         "  -channel name             use or generate the latest channel logo\n"
@@ -476,9 +475,7 @@ int main(int argc, const char* argv[])
     return 2;
   }
   if (err_count > 0 && errforce > 0){
-    fprintf(stderr, MY_VERSION "\n"
-        "Forced Exit (error found in arguments)\n"
-        );
+    fprintf(stderr, "Forced Exit (error found in arguments)\n");
     return 2;
   }
   if (logodata.dispoff > 0){  // for LOGO
